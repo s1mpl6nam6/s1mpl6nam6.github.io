@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#07080c">
+  <title>Aran Ramakrishnan</title>
+  <meta name="description" content="Aran Ramakrishnan studies computer science at UC San Diego: continual learning research, LLM tooling, and causal inference.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect y='4' width='32' height='28' rx='7' fill='%23ffb300'/%3E%3Crect y='12' width='32' height='20' rx='7' fill='%236f7bff'/%3E%3Crect y='20' width='32' height='12' rx='6' fill='%23c6ff2e'/%3E%3C/svg%3E">
+  <link rel="preload" href="fonts/jetbrains-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="styles.css?v=20261107i">
+  <script>
+    /* Holds the hero dark for the power-on. The timeout means a failed script can never hide the page. */
+    if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+      document.documentElement.classList.add('pre');
+      setTimeout(() => document.documentElement.classList.remove('pre'), 3000);
+    }
+  </script>
+  <script src="light.js?v=20261107i" defer></script>
+  <script src="main.js?v=20261107i" defer></script>
+  <script src="vendor/gsap.min.js?v=20261107i" defer></script>
+  <script src="vendor/ScrollTrigger.min.js?v=20261107i" defer></script>
+  <script src="vendor/SplitText.min.js?v=20261107i" defer></script>
+  <script src="motion.js?v=20261107i" defer></script>
+  <script src="depth.js?v=20261107i" defer></script>
+  <script src="ferro.js?v=20261107i" defer></script>
+</head>
+<body>
+  <a class="skip" href="#remitly">Skip to the work</a>
+
+  <canvas id="field" aria-hidden="true"></canvas>
+
+  <main class="stack" id="stack">
+    <span class="anchor" id="top"></span>
+    <section class="sheet hero" data-scene="home" data-label="Aran">
+      <h1 class="hero-name"><a href="#top">aran</a></h1>
+      <button class="scroll-cue" type="button" aria-label="Reveal the lights">
+        <span>scroll</span>
+        <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 8l5 5 5-5"/></svg>
+      </button>
+    </section>
+
+    <span class="anchor" id="remitly"></span>
+    <section class="sheet" data-scene="remitly" data-label="Remitly" aria-labelledby="h-remitly">
+      <div class="head">
+        <h2 id="h-remitly">Remitly: $30k a year, and why customers leave.</h2>
+        <p>AI Development Intern (KDE), Seattle, July to August 2026.</p>
+      </div>
+      <div class="service" aria-live="polite">
+        <p class="svc-name" id="rmBig">$30k</p>
+        <p class="svc-what" id="rmWhat"></p>
+        <dl class="facts">
+          <div><dt id="rmK1"></dt><dd id="rmV1"></dd></div>
+          <div><dt id="rmK2"></dt><dd id="rmV2"></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <span class="anchor" id="emg"></span>
+    <section class="sheet" data-scene="emg" data-label="sEMG paper" aria-labelledby="h-emg">
+      <canvas class="depth" id="depthEmg" aria-hidden="true"></canvas>
+      <div class="head">
+        <h2 id="h-emg">Learning new users without forgetting the old ones.</h2>
+        <p>First-author paper, accepted to IEEE BioCAS 2026: adapting sEMG gesture recognition (hand gestures read from forearm muscle signals, for prosthetic control) to new users. Neuromorphic Computing Group, since September 2025.</p>
+      </div>
+      <div class="score">
+        <p class="metric" id="scoreWhat" aria-live="polite">Forgetting with replay</p>
+        <p class="big"><span id="scoreNum">1.8</span>%</p>
+        <div class="meter" aria-hidden="true"><i id="scoreBar"></i></div>
+        <p class="also">I compared 3 continual learning methods on NinaPro with HGRN and LSTM models; replay reached <b>83.3%</b> final accuracy. A 2×2 ablation traced a training collapse to batch ordering, not recurrent state. <a href="https://arxiv.org/abs/2610.34011">Read the paper</a></p>
+        <p class="sample">Illustration: one ridge per user, learned front to back</p>
+      </div>
+    </section>
+
+    <span class="anchor" id="sentry"></span>
+    <section class="sheet" data-scene="sentry" data-label="Smart Sentry" aria-labelledby="h-sentry">
+      <canvas class="depth" id="depthSentry" aria-hidden="true"></canvas>
+      <div class="head">
+        <h2 id="h-sentry">10k leads in, 150 meetings out.</h2>
+        <p>GTM Engineering Intern at Smart Sentry AI, Sunnyvale, April to July 2026. I built an LLM-powered lead tool that runs inside the existing CRM workflow.</p>
+      </div>
+      <div class="service" aria-live="polite">
+        <p class="svc-name" id="svcName">source</p>
+        <p class="svc-what" id="svcWhat"></p>
+        <dl class="facts">
+          <div><dt>Result</dt><dd id="svcRes"></dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <span class="anchor" id="sloth"></span>
+    <section class="sheet split" data-scene="sloth" data-label="SlothLab" aria-labelledby="h-sloth">
+      <div class="head">
+        <h2 id="h-sloth">95.0% F1 from 0.32% of the weights.</h2>
+        <p>NLP Researcher at SlothLab, Santa Cruz, July 2025 to January 2026. I fine-tuned BERT, DistilBERT, RoBERTa, and DeBERTa-v3 across 12 LoRA configurations for named entity recognition on CoNLL-2003.</p>
+        <p class="also">The best model then pulled the characters out of 100+ LLM-written stories. Long stories keep the main plot but often drop side characters.</p>
+      </div>
+      <figure class="params">
+        <div class="pgrid" id="pgrid" role="img" aria-label="1,250 squares, each 0.08% of the model's parameters"></div>
+        <figcaption><span id="paramNote" aria-live="polite"></span></figcaption>
+      </figure>
+    </section>
+
+    <span class="anchor" id="symphony"></span>
+    <section class="sheet" data-scene="symphony" data-label="Symphony" aria-labelledby="h-symphony">
+      <div class="head">
+        <h2 id="h-symphony">Symphony: watching coding agents work.</h2>
+        <p>Co-founder since March 2026. $2k in seed funding at the 2026 Santa Cruz Launchpad, and an invite to Berkeley SkyDeck. I built the ingestion and the customizable analytics layer.</p>
+      </div>
+      <figure class="heat">
+        <div class="grid" id="heat" role="img" aria-label="Sample heat map of agent usage by day and hour"></div>
+        <figcaption><span id="heatNote" aria-live="polite"></span> <span class="sample">Sample data</span></figcaption>
+      </figure>
+    </section>
+
+    <span class="anchor" id="school"></span>
+    <section class="sheet" data-scene="school" data-label="Education" aria-labelledby="h-school">
+      <div class="head">
+        <h2 id="h-school">Computer science at UC San Diego, class of 2028.</h2>
+        <p>Transferred from UC Santa Cruz: 3.93 GPA, Regent Merit Scholar. Coursework: algorithms, machine learning, systems design, systems programming, probability, linear algebra.</p>
+      </div>
+      <figure class="timeline">
+        <ol class="gantt" id="gantt" aria-label="Timeline of school, research, and work"></ol>
+        <div class="years" aria-hidden="true"><span>2024</span><span>2025</span><span>2026</span><span>2027</span><span>2028</span></div>
+      </figure>
+    </section>
+
+    <span class="anchor" id="skills"></span>
+    <section class="sheet" data-scene="skills" data-label="Skills" aria-labelledby="h-skills">
+      <div class="head">
+        <h2 id="h-skills">Skills, and where they show up.</h2>
+        <p>Five groups. Pick one to see the whole list and where on this site it was used.</p>
+      </div>
+      <figure class="tui">
+        <ol id="tui" aria-label="Skills by group"></ol>
+        <figcaption><span id="tuiNote" aria-live="polite"></span></figcaption>
+      </figure>
+    </section>
+
+    <span class="anchor" id="close"></span>
+    <section class="sheet close" data-scene="home" data-label="Contact" aria-labelledby="h-close">
+      <div class="head">
+        <h2 id="h-close">Say hello.</h2>
+        <p>I'm recruiting for summer 2027 internships.</p>
+      </div>
+      <nav class="contact" aria-label="Contact">
+        <a href="mailto:aranr.dev@gmail.com"><span>Email</span><span>aranr.dev@gmail.com</span></a>
+        <a href="resume.pdf"><span>Resume</span><span>PDF, one page</span></a>
+        <a href="https://www.linkedin.com/in/aran-r74/"><span>LinkedIn</span><span>in/aran-r74</span></a>
+        <a href="https://github.com/s1mpl6nam6"><span>GitHub</span><span>s1mpl6nam6</span></a>
+        <a href="https://arxiv.org/abs/2610.34011"><span>Paper</span><span>arXiv 2610.34011</span></a>
+      </nav>
+      <pre class="ascii-art" role="img" aria-label="Aran, in ASCII letters">    ___    ____  ___    _   __
+   /   |  / __ \/   |  / | / /
+  / /| | / /_/ / /| | /  |/ /
+ / ___ |/ _, _/ ___ |/ /|  /
+/_/  |_/_/ |_/_/  |_/_/ |_/</pre>
+      <footer>
+        <a class="cta" href="mailto:aranr.dev@gmail.com">Email me</a>
+        <p>Control grammar borrowed from Apple's Human Interface Guidelines. Not affiliated with Apple. The building cursors are a dramatization: this site was built with Claude Code.</p>
+      </footer>
+    </section>
+  </main>
+
+  <div class="wire" aria-hidden="true"><i id="wire"></i></div>
+
+  <div class="bar glass" id="bar" data-tone="light" role="toolbar" aria-label="Page controls">
+    <a class="pill" id="backBtn" href="#top" aria-label="Back to the lights">
+      <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 5l-5 5 5 5"/></svg>
+      <span>Back</span>
+    </a>
+    <div class="ctl" id="ctl"></div>
+  </div>
+
+  <svg class="defs" width="0" height="0" aria-hidden="true">
+    <filter id="goo" color-interpolation-filters="sRGB">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3.6" result="b"/>
+      <feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -12"/>
+    </filter>
+    <filter id="lens" x="0" y="0" width="1" height="1" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feImage id="lensMap" x="0" y="0" preserveAspectRatio="none" result="map"/>
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="34" xChannelSelector="R" yChannelSelector="G"/>
+    </filter>
+  </svg>
+</body>
+</html>

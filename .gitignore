@@ -1,0 +1,8 @@
+# Development tooling and notes. The repo holds only the site.
+.claude/
+.gstack/
+.impeccable/
+ui-craft/
+DESIGN.md
+PRODUCT.md
+.DS_Store

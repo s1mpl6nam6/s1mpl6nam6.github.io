@@ -1,0 +1,584 @@
+/* The name: Futura Condensed ExtraBold, read from the visitor's system (Futura ships with macOS
+   and iOS but its license does not allow serving it). Elsewhere Jost Bold, an open Futura revival. */
+@font-face {
+  font-family: "Name";
+  src: local("Futura-CondensedExtraBold"), local("Futura Condensed ExtraBold"),
+       url("fonts/jost-latin-700-normal.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2");
+  font-weight: 100 800;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: dark;
+  --gutter: clamp(24px, 5vw, 72px);
+  --radius: clamp(24px, 3vw, 38px);
+  --bar-h: 60px;
+  --hue: #ffd9b8;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  /* One coding font everywhere: the name, headings, body, labels, and controls. */
+  --code: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: var(--code);
+  --tube: var(--code);
+  --mono: var(--code);
+}
+
+/* Each scene is one neon gas: a dark ground tinted by its hue, a tube colour, and a reading ink. */
+[data-scene="home"]      { --bg: #09090d; --neon: #ffd9b8; --ink: #f4eee8; }
+[data-scene="remitly"]   { --bg: #130d03; --neon: #ffb300; --ink: #fbf0dc; }
+[data-scene="school"]    { --bg: #04120d; --neon: #2dff9e; --ink: #e2fbef; }
+[data-scene="emg"]       { --bg: #15060b; --neon: #ff4d7d; --ink: #fde6ec; }
+[data-scene="skills"]    { --bg: #0a0c13; --neon: #b7c8ff; --ink: #e9edf8; }
+[data-scene="symphony"]  { --bg: #041113; --neon: #22e6ff; --ink: #def8fb; }
+[data-scene="sentry"]    { --bg: #090a1c; --neon: #8390ff; --ink: #e8eaff; }
+[data-scene="sloth"]     { --bg: #0e1204; --neon: #c6ff2e; --ink: #f1fbdb; }
+
+* { box-sizing: border-box; }
+html {
+  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, currentColor 35%, transparent) transparent;
+  -webkit-text-size-adjust: 100%;
+}
+body {
+  margin: 0;
+  overflow-x: clip;
+  font: 400 1.0625rem/1.5 var(--sans);
+  background: #050507;
+  color: #f4eee8;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, p, dl, dd, ol, ul, figure { margin: 0; padding: 0; }
+ol, ul { list-style: none; }
+a { color: inherit; }
+b { font-weight: 650; }
+::selection { background: var(--neon, #ffd9b8); color: #06070a; }
+:focus-visible { outline: 2px solid var(--neon, var(--hue)); outline-offset: 3px; border-radius: 6px; }
+.pre .hero-name, .pre .scroll-cue { opacity: 0; }
+
+.skip {
+  position: fixed; top: 12px; left: 12px; z-index: 60;
+  padding: 12px 18px; border-radius: 14px;
+  background: #111318; color: #f4eee8;
+  transform: translateY(-200%);
+}
+.skip:focus { transform: none; }
+.defs { position: absolute; }
+.anchor { display: block; height: 0; }
+.sample {
+  font-size: .8125rem; font-weight: 600;
+  white-space: nowrap;
+}
+
+/* The stack */
+.sheet {
+  position: relative;
+  min-height: 100svh;
+  padding: clamp(32px, 6vh, 72px) var(--gutter) calc(var(--bar-h) + 48px + env(safe-area-inset-bottom));
+  display: flex; flex-direction: column; gap: clamp(28px, 5vh, 56px);
+  background: var(--bg); color: var(--ink);
+  overflow: hidden;
+  --muted: color-mix(in srgb, var(--ink) 82%, var(--bg));
+  --glow:
+    0 0 .05em color-mix(in srgb, var(--neon) calc(var(--g, 1) * 100%), transparent),
+    0 0 .16em color-mix(in srgb, var(--neon) calc(var(--g, 1) * 100%), transparent),
+    0 0 .42em color-mix(in srgb, var(--neon) calc(var(--g, 1) * 70%), transparent),
+    0 0 1em color-mix(in srgb, var(--neon) calc(var(--g, 1) * 34%), transparent);
+}
+.sheet > * { position: relative; }
+
+.head { display: grid; gap: 14px; max-width: 62rem; }
+h1, h2, .big, .svc-name {
+  font-family: var(--tube); font-weight: 500;
+  color: color-mix(in srgb, var(--neon) 22%, #fff);
+  text-shadow: var(--glow);
+}
+h1, h2 { letter-spacing: -.03em; line-height: 1.08; text-wrap: balance; }
+h2 { font-size: clamp(2.25rem, 5.6vw, 4.6rem); }
+.head > p { font-size: clamp(1.1875rem, 2vw, 1.5rem); line-height: 1.36; letter-spacing: -.012em; max-width: 34em; color: var(--muted); text-wrap: pretty; }
+figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 20px; color: var(--muted); }
+
+.facts { display: flex; flex-wrap: wrap; gap: 14px clamp(24px, 4vw, 48px); margin-top: 10px; }
+.facts dt { font-size: .875rem; color: var(--muted); }
+.facts dd { font-size: 1.375rem; font-weight: 650; letter-spacing: -.015em; font-variant-numeric: tabular-nums; }
+
+/* Hero */
+.hero-copy {
+  flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 16px;
+  padding: clamp(24px, 5vh, 56px) var(--gutter);
+  max-width: 76rem;
+}
+.name { font-size: 1.1875rem; font-weight: 650; letter-spacing: -.012em; color: var(--neon); }
+h1 { font-size: clamp(2.875rem, 8.1vw, 6rem); max-width: 13em; }
+.lede { font-size: clamp(1.1875rem, 2vw, 1.5rem); letter-spacing: -.012em; color: var(--muted); max-width: 30em; }
+.weight { font-size: .9375rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Hero: the light is the page. Nav on top, the statement and the project chips along the bottom. */
+.hero { justify-content: space-between; padding: clamp(14px, 2vw, 24px) clamp(14px, 2vw, 24px) calc(var(--bar-h) + 30px + env(safe-area-inset-bottom)); }
+.hero .nav { padding-block: 6px; background: color-mix(in srgb, var(--neon) 7%, rgb(9 9 13 / .72)); }
+.hero-foot { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px 32px; flex-wrap: wrap; }
+.hero-copy { max-width: 40rem; display: grid; gap: 10px; text-shadow: 0 0 18px #000, 0 0 2px #000; }
+.hero-copy h1 { font-size: clamp(2.5rem, 5vw, 5rem); text-shadow: var(--glow); }
+.hero-copy .lede { font-size: clamp(1.0625rem, 1.4vw, 1.25rem); color: var(--ink); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px; max-width: 34rem; padding: 8px; background: color-mix(in srgb, var(--neon) 7%, rgb(9 9 13 / .72)); }
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px;
+  border: 1px solid color-mix(in srgb, var(--neon) 50%, transparent); border-radius: 22px;
+  background: color-mix(in srgb, var(--neon) 10%, transparent); color: var(--neon);
+  font: 650 .9375rem var(--sans); cursor: pointer;
+}
+.chip::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--neon); box-shadow: 0 0 8px var(--neon); }
+@media (hover: hover) { .chip:hover { background: color-mix(in srgb, var(--neon) 22%, transparent); } }
+.hover-tag {
+  position: fixed; left: 0; top: 0; z-index: 60; margin: 0; pointer-events: none;
+  padding: 5px 10px; border-radius: 8px; background: rgb(9 9 13 / .86);
+  border: 1px solid var(--tag, #fff); color: var(--tag, #fff);
+  font: 650 .875rem var(--sans); white-space: nowrap; opacity: 0; transition: opacity .15s;
+}
+.hover-tag.on { opacity: 1; }
+.warp { position: fixed; inset: 0; z-index: 90; pointer-events: none; opacity: 0; background: var(--warp, #fff); box-shadow: 0 0 60px 20px var(--warp, #fff); }
+
+/* (Previous bento tiles, kept for reference by the documenter.) */
+.hero { padding: clamp(14px, 2vw, 24px) clamp(14px, 2vw, 24px) calc(var(--bar-h) + 30px + env(safe-area-inset-bottom)); gap: 0; }
+.bento {
+  flex: 1;
+  display: grid; grid-template-columns: minmax(0, 1.08fr) minmax(0, 1.22fr) minmax(0, .86fr); grid-template-rows: auto 1fr;
+  gap: clamp(10px, 1.1vw, 16px);
+  min-height: 0;
+}
+.bento .col { display: flex; flex-direction: column; gap: inherit; min-height: 0; }
+.tile {
+  position: relative; display: block;
+  background: color-mix(in srgb, var(--neon) 7%, var(--bg)); color: var(--ink);
+  border: 1.5px solid color-mix(in srgb, var(--neon) 55%, transparent);
+  border-radius: 20px;
+  padding: clamp(16px, 1.6vw, 26px);
+  box-shadow: 0 0 26px -10px var(--neon), inset 0 0 30px -18px var(--neon);
+  text-decoration: none;
+}
+a.tile { transition: background-color .2s, border-color .2s; }
+@media (hover: hover) { a.tile:hover { background: color-mix(in srgb, var(--neon) 14%, var(--bg)); border-color: var(--neon); } }
+.nav { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 6px; }
+.brand { font: 400 1.5rem/1 var(--tube); color: color-mix(in srgb, var(--neon) 22%, #fff); text-shadow: var(--glow); text-decoration: none; display: inline-flex; align-items: center; min-height: 44px; }
+.links { display: flex; gap: 4px; }
+.links a { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: 22px; color: var(--ink); text-decoration: none; font-weight: 600; }
+@media (hover: hover) { .links a:hover { background: color-mix(in srgb, var(--neon) 14%, transparent); } }
+.title { flex: 1.35; display: flex; align-items: flex-end; }
+.hero h1 { font-size: clamp(2.5rem, 3.9vw, 4.4rem); max-width: 11em; }
+.media { width: 82%; display: grid; align-content: center; gap: 6px; }
+.kb { font: 400 clamp(1.6rem, 2.2vw, 2.3rem)/1.05 var(--tube); color: color-mix(in srgb, var(--neon) 22%, #fff); text-shadow: var(--glow); font-variant-numeric: tabular-nums; }
+.weight { font-size: .9375rem; color: var(--muted); }
+.text.lede { width: 82%; flex: .8; display: flex; align-items: center; margin: 0; font-size: clamp(1.125rem, 1.4vw, 1.375rem); line-height: 1.38; color: var(--ink); }
+.image { padding: 0; overflow: hidden; min-height: 0; }
+#field { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.caption { position: absolute; left: 18px; right: 18px; bottom: 16px; font-size: .9375rem; color: var(--ink); text-wrap: balance; }
+.card { flex: 1.1; display: flex; flex-direction: column; justify-content: flex-end; gap: 6px; }
+.card-k { font-weight: 650; color: var(--neon); }
+.card-n { font: 400 clamp(1.8rem, 2.5vw, 2.8rem)/1.05 var(--tube); color: color-mix(in srgb, var(--neon) 22%, #fff); text-shadow: var(--glow); }
+.card-t { font-size: .9375rem; color: var(--muted); }
+.list { flex: 1.4; display: grid; align-content: center; padding-block: 8px; }
+.list a { display: flex; justify-content: space-between; gap: 12px; align-items: center; min-height: 34px; color: var(--ink); text-decoration: none; font-size: .9375rem; border-radius: 8px; padding: 0 6px; margin: 0 -6px; }
+.list a span:first-child { color: var(--neon); font-weight: 650; }
+.list a span:last-child { font-variant-numeric: tabular-nums; }
+@media (hover: hover) { .list a:hover { background: color-mix(in srgb, var(--neon) 12%, transparent); } }
+.cta.tile { display: flex; align-items: center; justify-content: center; min-height: 64px; background: var(--neon); color: #0b0a0c; font-weight: 700; font-size: 1.0625rem; box-shadow: 0 0 30px -6px var(--neon); }
+@media (hover: hover) { .cta.tile:hover { background: color-mix(in srgb, var(--neon) 85%, #fff); } }
+@media (max-width: 900px) {
+  .bento { grid-template-columns: minmax(0, 1fr); grid-template-rows: none; }
+  .nav { flex-wrap: wrap; gap: 4px 12px; }
+  .links { flex-wrap: wrap; margin-right: -10px; }
+  .links a { padding: 0 10px; }
+  .title { min-height: 34svh; }
+  .media, .text.lede { width: 100%; }
+  .image { min-height: 46svh; }
+  .list a { min-height: 44px; }
+}
+
+/* The agent crew and its selection marquee. */
+.sheet > .agent {
+  position: absolute; left: 0; top: 0; z-index: 6;
+  pointer-events: none; visibility: hidden;
+  will-change: transform;
+}
+.agent svg {
+  display: block; width: 20px; height: 22px;
+  fill: var(--c); stroke: #06070a; stroke-width: 1.3; stroke-linejoin: round;
+}
+.agent span {
+  position: absolute; left: 15px; top: 19px;
+  padding: 3px 8px; border-radius: 3px 8px 8px 8px;
+  background: var(--c); color: #06070a;
+  font: 650 12.5px/1.25 var(--sans); white-space: nowrap;
+}
+.agent .ping {
+  position: absolute; left: -11px; top: -11px; width: 24px; height: 24px;
+  border: 2px solid var(--c); border-radius: 50%; opacity: 0;
+}
+.sheet > .marquee {
+  position: absolute; left: 0; top: 0; z-index: 5;
+  pointer-events: none; visibility: hidden;
+  border: 2px dashed var(--c);
+  background: color-mix(in srgb, var(--c) 6%, transparent);
+  border-radius: 12px;
+  contain: layout style;
+  will-change: transform;
+}
+.sheet > .marquee::after {
+  content: attr(data-size);
+  position: absolute; right: -2px; bottom: -28px; white-space: nowrap;
+  padding: 2px 7px; border-radius: 6px;
+  background: var(--c); color: #06070a;
+  font: 650 12.5px/1.3 var(--sans); font-variant-numeric: tabular-nums;
+}
+
+/* 3D scenes sit in the sheet's open space and fade out toward the text. */
+.sheet > .depth {
+  position: absolute; top: 0; right: 0; bottom: 0;
+  width: min(66vw, 1040px); height: 100%;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(90deg, transparent 12%, #000 44%);
+  mask-image: linear-gradient(90deg, transparent 12%, #000 44%);
+}
+.sheet > #depthEmg { bottom: auto; height: 76%; width: min(50vw, 800px); }
+.sheet > #depthSentry {
+  -webkit-mask-image: linear-gradient(90deg, transparent 22%, #000 48%);
+  mask-image: linear-gradient(90deg, transparent 22%, #000 48%);
+}
+
+/* Two columns: copy beside the demo. */
+.split { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(28px, 5vw, 72px); align-items: center; }
+
+/* sEMG paper */
+.score { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; }
+.big {
+  font-size: clamp(4.6rem, 16vw, 11.5rem); line-height: .95; letter-spacing: -.04em;
+  font-variant-numeric: tabular-nums;
+}
+.meter { height: 14px; border-radius: 7px; background: color-mix(in srgb, var(--ink) 16%, transparent); }
+.meter i { display: block; height: 100%; border-radius: 7px; background: var(--neon); box-shadow: 0 0 18px var(--neon); transform-origin: left; transform: scaleX(.223); transition: transform .62s var(--ease); }
+.also { color: var(--muted); max-width: 40em; }
+.also a { color: var(--neon); text-underline-offset: 3px; }
+.score .big { font-size: clamp(4rem, 12vw, 8.5rem); }
+.metric { font-weight: 650; color: var(--neon); margin-bottom: -8px; }
+
+/* SlothLab: the parameters as squares. */
+.params { display: grid; gap: 16px; align-content: center; }
+.pgrid { display: grid; grid-template-columns: repeat(50, 1fr); gap: clamp(1px, .25vw, 2px); }
+.pgrid i { aspect-ratio: 1; border-radius: 1.5px; background: color-mix(in srgb, var(--ink) 13%, transparent); transition: background-color .5s var(--ease), box-shadow .5s; }
+.pgrid.full i, .pgrid i.lora { background: var(--neon); }
+.pgrid:not(.full) i.lora { box-shadow: 0 0 10px 2px var(--neon); }
+.params figcaption { font-weight: 600; color: var(--neon); min-height: 3em; }
+
+/* Education: one time axis for school, research, and work. */
+.timeline { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; }
+.gantt { position: relative; display: grid; gap: 4px; container-type: inline-size; }
+.gantt::after { content: ""; position: absolute; top: -6px; bottom: -6px; left: calc(var(--now) * 1%); width: 1.5px; background: var(--ink); opacity: .5; }
+.gantt li { position: relative; height: 44px; }
+.gantt .span {
+  position: absolute; top: 6px; bottom: 6px; left: calc(var(--s) * 1%); width: max(calc(var(--w) * 1%), 6px);
+  border: 2px solid var(--neon); border-radius: 10px;
+  background: color-mix(in srgb, var(--neon) 14%, transparent); box-shadow: 0 0 14px -2px var(--neon);
+  color: var(--ink); text-decoration: none;
+}
+.gantt .span.open { border-right-style: dashed; border-radius: 10px 2px 2px 10px; }
+.gantt .lbl { position: absolute; top: 50%; translate: 0 -50%; left: calc(100% + 12px); white-space: nowrap; font-size: .9375rem; color: var(--muted); }
+.gantt .lbl b { color: var(--neon); font-weight: 650; }
+.gantt .lbl i { font-style: normal; }
+.gantt .span.flip .lbl { left: auto; right: calc(100% + 12px); }
+a.span::before { content: ""; position: absolute; inset: -8px -2px; }
+@media (hover: hover) { a.span:hover { background: color-mix(in srgb, var(--neon) 34%, transparent); } }
+.years { display: grid; grid-template-columns: 2fr 2fr 2fr 2fr 1fr; font-size: .875rem; font-weight: 600; color: var(--muted); padding-top: 8px; border-top: 1.5px solid color-mix(in srgb, var(--neon) 40%, transparent); font-variant-numeric: tabular-nums; }
+
+/* Skills */
+.tui { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 14px; font-family: var(--mono); font-size: clamp(.8125rem, 1.25vw, 1rem); }
+.tui ol { background: #11141d; box-shadow: 0 0 0 1px color-mix(in srgb, var(--neon) 30%, transparent), 0 0 40px -12px var(--neon); border-radius: 16px; padding: 12px; overflow: hidden; }
+.tui li { display: grid; grid-template-columns: minmax(0, 9em) minmax(0, 1fr) auto; gap: 16px; padding: 7px 12px; border-radius: 9px; color: #cdd5e4; white-space: nowrap; }
+.tui li > * { overflow: hidden; text-overflow: ellipsis; }
+.tui li.sec { color: var(--neon); font-weight: 700; margin-top: 6px; display: block; }
+.tui li.sec:first-child { margin-top: 0; }
+.tui li.on { background: var(--neon); color: #0a0c13; box-shadow: 0 0 20px -2px var(--neon); }
+.tui li { cursor: pointer; grid-template-columns: minmax(0, 10em) minmax(0, 1fr) 2em; }
+.tui li.on > :nth-child(2) { white-space: normal; }
+.tui li > :nth-child(3) { text-align: right; font-variant-numeric: tabular-nums; }
+.tui figcaption { font-family: var(--sans); font-size: 1rem; }
+
+/* Symphony */
+.heat { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 14px; }
+.grid { display: grid; grid-template-columns: repeat(24, 1fr); gap: clamp(2px, .4vw, 5px); }
+.grid i { aspect-ratio: 1; border-radius: clamp(2px, .5vw, 7px); background: var(--neon); opacity: var(--v); transition: opacity .5s var(--ease); }
+
+/* Remitly and Smart Sentry */
+.service { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; }
+.svc-name { font-size: clamp(3.6rem, 13vw, 9.5rem); line-height: 1; letter-spacing: -.04em; }
+.svc-what { font-size: clamp(1.1875rem, 2vw, 1.5rem); letter-spacing: -.012em; max-width: 30em; }
+
+/* Close */
+.close { justify-content: center; }
+.contact { display: grid; max-width: 760px; }
+.contact a { display: flex; justify-content: space-between; gap: 16px; align-items: center; min-height: 52px; border-bottom: 1px solid color-mix(in srgb, var(--ink) 16%, transparent); color: var(--ink); text-decoration: none; font-size: clamp(1rem, 1.6vw, 1.25rem); }
+.contact a span:first-child { color: var(--neon); font-weight: 650; }
+.contact a span:last-child { overflow-wrap: anywhere; text-align: right; }
+@media (hover: hover) { .contact a:hover span:last-child { color: var(--neon); } }
+.close footer p { max-width: 56ch; }
+.ascii-art {
+  margin: 0; font: 600 clamp(.75rem, 1.6vw, 1.2rem)/1.05 var(--mono);
+  color: color-mix(in srgb, var(--neon) 30%, #fff); text-shadow: var(--glow);
+  white-space: pre; overflow: hidden;
+}
+.close footer { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px 32px; color: var(--muted); font-size: .9375rem; }
+.cta {
+  display: inline-flex; align-items: center; min-height: 52px; padding: 0 26px;
+  border-radius: 26px; background: var(--neon); color: #0b0a0c; box-shadow: 0 0 28px -4px var(--neon);
+  font-size: 1.0625rem; font-weight: 650; text-decoration: none;
+  transition: transform .2s var(--ease);
+}
+.cta:active { transform: scale(.97); }
+
+/* The control layer. The only translucent material on the page. */
+.glass {
+  --tint: rgb(14 15 21 / .68);
+  --glass-ink: #fff;
+  color: var(--glass-ink);
+  background: var(--tint);
+  -webkit-backdrop-filter: blur(14px) saturate(190%);
+  backdrop-filter: blur(14px) saturate(190%);
+  box-shadow:
+    0 0 26px -6px var(--hue),
+    0 14px 34px -10px rgb(0 0 0 / .6),
+    inset 0 1px 0 rgb(255 255 255 / .28),
+    inset 0 0 0 1px color-mix(in srgb, var(--hue) 55%, transparent);
+  transition: background-color .35s, color .25s, box-shadow .4s;
+}
+.glass.refract {
+  -webkit-backdrop-filter: url(#lens) blur(5px) saturate(190%);
+  backdrop-filter: url(#lens) blur(5px) saturate(190%);
+}
+.bar {
+  position: fixed; z-index: 50;
+  left: 50%; bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  max-width: calc(100vw - 24px);
+  height: var(--bar-h); padding: 8px;
+  border-radius: 30px;
+  display: flex; align-items: center; gap: 4px;
+  transition: width .5s var(--ease), background-color .35s, color .25s;
+}
+.pill {
+  flex: none;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 44px; min-width: 44px; padding: 0 14px 0 12px;
+  border: 0; border-radius: 22px; background: none;
+  color: inherit; font: inherit; font-size: 1rem; font-weight: 650; letter-spacing: -.012em;
+  text-decoration: none; white-space: nowrap; cursor: pointer;
+  transition: background-color .18s, transform .18s var(--ease);
+}
+.pill.icon { padding: 0; }
+.pill svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.pill:active { transform: scale(.94); }
+@media (hover: hover) { .pill:hover { background: color-mix(in srgb, currentColor 13%, transparent); } }
+.bar :focus-visible { outline-offset: -2px; border-radius: 22px; }
+
+.ctl { display: flex; align-items: center; min-width: 0; }
+.ctl:empty { display: none; }
+.seg { position: relative; display: flex; height: 44px; padding: 0 3px; border-radius: 22px; background: color-mix(in srgb, currentColor 11%, transparent); }
+.seg .thumb {
+  position: absolute; top: 3px; left: 0; height: 38px; width: var(--tw, 0); border-radius: 19px;
+  background: var(--hue); box-shadow: 0 0 16px -2px var(--hue);
+  transform: translateX(var(--tx, 3px));
+  transition: transform .42s var(--ease), width .42s var(--ease);
+}
+.seg button {
+  position: relative; height: 44px; padding: 0 14px;
+  border: 0; border-radius: 19px; background: none;
+  color: inherit; font: inherit; font-size: .9375rem; font-weight: 600; letter-spacing: -.01em;
+  white-space: nowrap; cursor: pointer;
+  transition: color .2s;
+}
+.seg button[aria-pressed="true"] { color: #06070a; }
+.keys { display: flex; align-items: center; border-radius: 22px; background: color-mix(in srgb, currentColor 11%, transparent); }
+
+
+/* The circuit. One wire down the page that carries the colour of the current sheet. */
+.wire {
+  position: fixed; z-index: 40; left: 9px; top: 12px; bottom: 12px; width: 3px;
+  border-radius: 2px; pointer-events: none;
+  background: rgb(255 255 255 / .1);
+}
+.wire i {
+  display: block; height: 100%; border-radius: 2px;
+  transform-origin: top; transform: scaleY(0);
+  background: var(--hue);
+  box-shadow: 0 0 10px var(--hue), 0 0 24px var(--hue);
+  transition: background-color .4s, box-shadow .4s;
+}
+
+@media (max-width: 900px) {
+  .sheet > .depth, .sheet > #depthEmg {
+    top: 25%; bottom: auto; width: 100%; height: 31%;
+    -webkit-mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent) !important;
+    mask-image: linear-gradient(transparent, #000 12%, #000 88%, transparent) !important;
+  }
+  .split { display: flex; flex-direction: column; align-items: stretch; }
+  .note { min-height: 0; }
+}
+
+/* Narrow screens: the bar's Back keeps only its arrow, the skills list drops its long column until chosen,
+   and the timeline labels sit under their bars. */
+@media (max-width: 640px) {
+  #backBtn { width: 44px; }
+  #backBtn span { display: none; }
+  .gantt li { height: 52px; }
+  .gantt .span { top: 4px; bottom: auto; height: 14px; border-radius: 6px; }
+  /* A linked bar's tap area covers its label too; the drawn bar stays its true length. */
+  .gantt a.span { top: 0; height: 48px; width: max(calc(var(--w) * 1%), 150px); border: 0; background: none; box-shadow: none; border-radius: 0; }
+  .gantt a.span::after { content: ""; position: absolute; top: 4px; left: 0; height: 14px; width: max(calc(var(--w) * 1cqw), 6px); box-sizing: border-box; border: 2px solid var(--neon); border-radius: 6px; background: color-mix(in srgb, var(--neon) 14%, transparent); box-shadow: 0 0 14px -2px var(--neon); }
+  .gantt a.span.open::after { border-right-style: dashed; }
+  .gantt a.span::before { display: none; }
+  .gantt .lbl, .gantt .span.flip .lbl { top: 20px; translate: none; left: 0; right: auto; font-size: .8125rem; }
+  .gantt .span.flip .lbl { left: auto; right: 0; }
+  .gantt .lbl i { display: none; }
+  .tui li { grid-template-columns: minmax(0, 1fr) 2em; }
+  .tui li > :nth-child(2) { display: none; }
+  .tui li.on { grid-template-columns: minmax(0, 1fr) 2em; }
+  .tui li.on > :nth-child(2) { display: block; grid-column: 1 / -1; grid-row: 2; }
+  .sample { white-space: normal; }
+  .pill { padding: 0; }
+  .seg button { padding: 0 11px; font-size: .875rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  .glass[data-tone], .glass[data-tone].refract {
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    --tint: #101117;
+    background: #101117;
+  }
+}
+
+@media (prefers-contrast: more) {
+  .sheet { --muted: var(--ink); --glow: 0 0 0 transparent; }
+  h1, h2, .big, .svc-name { color: #fff; }
+  .glass[data-tone], .glass[data-tone].refract {
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    --tint: #000;
+    background: #000;
+    box-shadow: 0 0 0 2px #fff;
+  }
+}
+
+/* Hover glitch: one quick split on links, never under reduced motion. */
+@keyframes glitch {
+  0% { text-shadow: 2px 0 #ff2bd6, -2px 0 #2bf0ff; transform: translateX(1px); }
+  30% { text-shadow: -3px 0 #ff2bd6, 3px 0 #2bf0ff; transform: translateX(-2px); }
+  60% { text-shadow: 1px 0 #ff2bd6, -1px 0 #2bf0ff; transform: translateX(1px); }
+  100% { transform: none; }
+}
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .brand:hover, .links a:hover, .list a:hover span:first-child, .cta:hover, .card:hover .card-n { animation: glitch .3s steps(1) 1; }
+  .list a span:first-child, .card-n { display: inline-block; }
+}
+
+/* Ferrofluid. The canvas sits behind the content and draws the element's body and spikes in its own
+   background, with the border line traced around the merged shape by a per-element filter. */
+.ferro { position: absolute; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .15s; }
+.ferro.on { opacity: 1; }
+@media (prefers-reduced-motion: reduce) { .ferro { display: none; } }
+
+/* The right-click menu the cursors use to delete things. */
+.sheet > .ctx {
+  position: absolute; left: 0; top: 0; z-index: 7;
+  display: grid; min-width: 150px; padding: 5px;
+  border-radius: 10px;
+  background: rgb(18 19 25 / .96);
+  box-shadow: 0 12px 30px -8px rgb(0 0 0 / .7), inset 0 0 0 1px rgb(255 255 255 / .12);
+  font: 500 13px/1 var(--sans); color: #e9ebf2;
+  pointer-events: none; visibility: hidden;
+}
+.ctx span { padding: 8px 10px; border-radius: 6px; }
+.ctx .del { color: #ff5a6e; }
+.ctx .del.hot { background: #ff3b55; color: #fff; }
+
+/* The light sits behind every page. */
+#field { position: fixed; inset: 0; z-index: 0; width: 100%; height: 100%; display: block; }
+.stack { position: relative; z-index: 1; }
+
+/* App mode: pages one at a time, pinned to the screen. The page body never scrolls; a page taller
+   than a phone scrolls inside itself. Pages are see-through enough for their beam to show. */
+.app, .app body { height: 100%; overflow: hidden; }
+.app .anchor, .app .wire { display: none; }
+.app .stack > .sheet {
+  position: fixed; inset: 0; min-height: 0; height: 100%;
+  overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain;
+  background: color-mix(in srgb, var(--bg) 58%, transparent);
+}
+.app .stack > .sheet[hidden] { display: none; }
+.app .stack > .sheet:not(.hero) {
+  padding-top: clamp(20px, 4.5vh, 64px);
+  padding-bottom: calc(var(--bar-h) + 24px + env(safe-area-inset-bottom));
+  gap: clamp(16px, 3.6vh, 52px);
+}
+.app .stack > .hero { background: transparent; }
+
+/* Callouts: a label for every light, tied to its beam by an elbowed leader. */
+.sheet > .callouts { position: absolute; inset: 0; z-index: 2; pointer-events: none; opacity: 0; transition: opacity .35s; }
+.callouts.on { opacity: 1; }
+.callouts:not(.on) .callout { pointer-events: none; }
+.callouts .leaders { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.callouts path { fill: none; stroke-width: 1.4; stroke-linejoin: round; opacity: .85; filter: drop-shadow(0 0 3px currentColor); }
+.callouts circle { filter: drop-shadow(0 0 5px #fff); }
+.callout {
+  position: absolute; left: 0; top: 0; pointer-events: auto;
+  display: grid; gap: 1px; text-align: left; min-height: 44px; align-content: center;
+  padding: 5px 11px; border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--c) 70%, transparent);
+  background: rgb(9 9 13 / .82); color: #f1f2f6; cursor: pointer;
+  font: 400 .8125rem/1.2 var(--sans); white-space: nowrap;
+  box-shadow: 0 0 14px -4px var(--c);
+}
+.callout b { color: var(--c); font-weight: 700; font-size: .875rem; }
+.callout { transition: opacity .25s; }
+.callout.out { opacity: 0; pointer-events: none; }
+.callout:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+@media (hover: hover) { .callout:hover { background: color-mix(in srgb, var(--c) 18%, rgb(9 9 13)); } }
+
+/* Home: only the name, and the lights once you scroll. The name starts large in the middle and
+   settles at the top centre as the lights take over. */
+.hero { display: block; }
+.hero-name {
+  position: absolute; left: 0; right: 0; width: fit-content; margin: 0 auto; top: clamp(14px, 2vw, 26px); z-index: 3;
+  font: 700 clamp(1.7rem, 2.4vw, 2.3rem)/1 "Name", Futura, sans-serif; letter-spacing: -0.01em;
+  transform-origin: 50% 50%; will-change: transform;
+}
+.hero-name a { color: color-mix(in srgb, var(--neon) 22%, #fff); text-decoration: none; text-shadow: var(--glow); display: inline-block; padding: 6px 4px; }
+.scroll-cue {
+  position: absolute; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom)); z-index: 3;
+  transform: translateX(-50%);
+  display: grid; justify-items: center; gap: 2px; min-width: 64px; min-height: 56px; padding: 6px 12px;
+  border: 0; background: none; color: color-mix(in srgb, var(--neon) 40%, #fff); cursor: pointer;
+  font: 600 .8125rem var(--sans); letter-spacing: .02em;
+}
+.scroll-cue svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 6px var(--neon)); }
+@media (prefers-reduced-motion: no-preference) { .scroll-cue svg { animation: nudge 1.6s ease-in-out infinite; } }
+@keyframes nudge { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(5px); } }
+/* The bar is for project pages; home is only the name and the lights. */
+html[data-page="top"] #bar { opacity: 0 !important; visibility: hidden !important; }
+@media (max-width: 899px) { .sheet > .callouts { display: block; } .callout { padding: 4px 9px; min-height: 44px; } .callout b { font-size: .8125rem; } .callout span { font-size: .75rem; } }
+
+/* The ASCII draw-in sits over the element it is uncovering, under the cursor. */
+.sheet > .ascii-in { position: absolute; left: 0; top: 0; z-index: 5; pointer-events: none; }
+
+/* Monospace runs wide; on phones the reading text and matrix step down so pages fit. */
+@media (max-width: 640px) {
+  .head > p { font-size: 1rem; }
+  .facts dd { font-size: 1.125rem; }
+}
