@@ -206,7 +206,7 @@
     b.addEventListener('pointerleave', () => { if (f.state.hover === i) f.state.hover = -1; });
     return it;
   });
-  const blockers = () => ['.hero-name', '.scroll-cue']
+  const blockers = () => ['.hero-name', '.scroll-cue', '.dev-tag', '.contact-link']
     .map(q => document.querySelector(q)?.getBoundingClientRect()).filter(r => r && r.width);
   const hits = (a, b, pad = 6) => a.l < b.right + pad && a.r > b.left - pad && a.t < b.bottom + pad && a.b > b.top - pad;
   /* A label sits off to one side of its anchor, so the leader runs as a diagonal to a short

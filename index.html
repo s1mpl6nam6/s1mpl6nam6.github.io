@@ -9,7 +9,7 @@
   <meta name="description" content="Aran Ramakrishnan studies computer science at UC San Diego: continual learning research, LLM tooling, and causal inference.">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect y='4' width='32' height='28' rx='7' fill='%23ffb300'/%3E%3Crect y='12' width='32' height='20' rx='7' fill='%236f7bff'/%3E%3Crect y='20' width='32' height='12' rx='6' fill='%23c6ff2e'/%3E%3C/svg%3E">
   <link rel="preload" href="fonts/jetbrains-mono-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="styles.css?v=20261107i">
+  <link rel="stylesheet" href="styles.css?v=20261111b">
   <script>
     /* Holds the hero dark for the power-on. The timeout means a failed script can never hide the page. */
     if (matchMedia('(prefers-reduced-motion: no-preference)').matches) {
@@ -17,14 +17,14 @@
       setTimeout(() => document.documentElement.classList.remove('pre'), 3000);
     }
   </script>
-  <script src="light.js?v=20261107i" defer></script>
-  <script src="main.js?v=20261107i" defer></script>
-  <script src="vendor/gsap.min.js?v=20261107i" defer></script>
-  <script src="vendor/ScrollTrigger.min.js?v=20261107i" defer></script>
-  <script src="vendor/SplitText.min.js?v=20261107i" defer></script>
-  <script src="motion.js?v=20261107i" defer></script>
-  <script src="depth.js?v=20261107i" defer></script>
-  <script src="ferro.js?v=20261107i" defer></script>
+  <script src="light.js?v=20261111b" defer></script>
+  <script src="main.js?v=20261111b" defer></script>
+  <script src="vendor/gsap.min.js?v=20261111b" defer></script>
+  <script src="vendor/ScrollTrigger.min.js?v=20261111b" defer></script>
+  <script src="vendor/SplitText.min.js?v=20261111b" defer></script>
+  <script src="motion.js?v=20261111b" defer></script>
+  <script src="depth.js?v=20261111b" defer></script>
+  <script src="ferro.js?v=20261111b" defer></script>
 </head>
 <body>
   <a class="skip" href="#remitly">Skip to the work</a>
@@ -90,16 +90,12 @@
     </section>
 
     <span class="anchor" id="sloth"></span>
-    <section class="sheet split" data-scene="sloth" data-label="SlothLab" aria-labelledby="h-sloth">
+    <section class="sheet" data-scene="sloth" data-label="SlothLab" aria-labelledby="h-sloth">
       <div class="head">
         <h2 id="h-sloth">95.0% F1 from 0.32% of the weights.</h2>
         <p>NLP Researcher at SlothLab, Santa Cruz, July 2025 to January 2026. I fine-tuned BERT, DistilBERT, RoBERTa, and DeBERTa-v3 across 12 LoRA configurations for named entity recognition on CoNLL-2003.</p>
         <p class="also">The best model then pulled the characters out of 100+ LLM-written stories. Long stories keep the main plot but often drop side characters.</p>
       </div>
-      <figure class="params">
-        <div class="pgrid" id="pgrid" role="img" aria-label="1,250 squares, each 0.08% of the model's parameters"></div>
-        <figcaption><span id="paramNote" aria-live="polite"></span></figcaption>
-      </figure>
     </section>
 
     <span class="anchor" id="symphony"></span>
@@ -164,6 +160,9 @@
   </main>
 
   <div class="wire" aria-hidden="true"><i id="wire"></i></div>
+
+  <p class="dev-tag" role="note"><i aria-hidden="true"></i>In development</p>
+  <a class="contact-link" href="#close">Contact</a>
 
   <div class="bar glass" id="bar" data-tone="light" role="toolbar" aria-label="Page controls">
     <a class="pill" id="backBtn" href="#top" aria-label="Back to the lights">

@@ -432,16 +432,15 @@
     };
 
     /* Every project page: its build, a reset, and a quick right-click teardown for leaving. */
-    const DEMOS = { remitly: '.service', emg: '.score', sentry: '.service', sloth: '.params', symphony: '.heat', school: '.timeline', skills: '.tui', close: '.contact' };
+    const DEMOS = { remitly: '.service', emg: '.score', sentry: '.service', sloth: null, symphony: '.heat', school: '.timeline', skills: '.tui', close: '.contact' };
     const EXTRA = {
       symphony: (tl, t) => tl.from('#heat i', { scale: 0, duration: .7, ease: 'expo.out', stagger: { grid: [7, 24], from: 'center', amount: .6 } }, t),
-      sloth: (tl, t) => tl.from('#pgrid i', { scale: 0, duration: .5, ease: 'expo.out', stagger: { amount: .7, from: 'random' } }, t),
       school: (tl, t) => tl.from('#gantt .span', { scaleX: 0, transformOrigin: '0 50%', duration: .6, ease: 'expo.out', stagger: .07 }, t),
     };
     Object.entries(DEMOS).forEach(([id, demo]) => {
       const sheet = document.getElementById(id).nextElementSibling, head = $('.head', sheet);
       const lede = $(':scope > p', head), extras = [...head.children].filter(e => e.tagName !== 'H2' && e !== lede);
-      const plan = { copy: [[$('h2', head)]], layout: [[lede], ...(extras.length ? [extras] : [])], data: [[$(demo, sheet)]] };
+      const plan = { copy: [[$('h2', head)]], layout: [[lede], ...(extras.length ? [extras] : [])], data: demo ? [[$(demo, sheet)]] : [] };
       const parts = Object.values(plan).flat(2).filter(Boolean);
       /* Built the first time the page is visible, because hidden elements measure as nothing, and
          rebuilt if the window has changed size since. */
@@ -520,7 +519,7 @@
         arrive();
         if (st) gsap.to(st, { ...lookFor(id), duration: .8, ease: 'power2.inOut' });
         if (id === 'top') { reveal.progress(1); want = 1; }
-        if (from === 'top' || id === 'top') gsap.from(id === 'top' ? heroUI : [], { autoAlpha: 0, duration: .5 });
+        if (id === 'top') gsap.from(heroUI, { autoAlpha: 0, duration: .5 });
         pages[id]?.enter();
         done();
         return;

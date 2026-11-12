@@ -99,17 +99,6 @@
     document.dispatchEvent(new CustomEvent('demo:service', { detail: i }));
   };
 
-  /* SlothLab: 1,250 squares, each 0.08% of the parameters. LoRA trained 0.32%, so 4 squares. */
-  const pgrid = $('#pgrid');
-  const LORA = new Set([212, 538, 791, 1107]);
-  for (let n = 0; n < 1250; n++) pgrid.appendChild(document.createElement('i')).className = LORA.has(n) ? 'lora' : '';
-  const setParams = i => {
-    pgrid.classList.toggle('full', i === 0);
-    $('#paramNote').textContent = i === 0
-      ? 'Full fine-tuning updates every square: all 1,250.'
-      : 'LoRA trains 4 squares of 1,250: 99.68% fewer parameters, at 95.0% validation F1.';
-  };
-
   /* Education: everything on one time axis, January 2024 to June 2028. Bars with a page are doors. */
   const T0 = 2024, T1 = 2028.5, NOW = 2026 + 10.2 / 12;
   const ym = (y, m) => y + (m - 1) / 12;
@@ -154,7 +143,6 @@
     Remitly: { label: 'Project', options: ['Matching', 'Churn study'], set: setRemitly, value: 0 },
     'sEMG paper': { label: 'Method', options: ['Replay', 'EWC'], set: setScore, value: 0 },
     'Smart Sentry': { label: 'Stage', options: SERVICES.map(s => s[0]), set: setService, value: 0 },
-    SlothLab: { label: 'Training', options: ['Full', 'LoRA'], set: setParams, value: 1 },
     Symphony: { label: 'Measure', options: ['Prompts', 'Tokens', 'Cost'], set: setHeat, value: 0 },
     Skills: { keys: true },
   };

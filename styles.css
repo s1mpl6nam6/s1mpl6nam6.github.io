@@ -267,13 +267,35 @@ a.tile { transition: background-color .2s, border-color .2s; }
 .score .big { font-size: clamp(4rem, 12vw, 8.5rem); }
 .metric { font-weight: 650; color: var(--neon); margin-bottom: -8px; }
 
-/* SlothLab: the parameters as squares. */
-.params { display: grid; gap: 16px; align-content: center; }
-.pgrid { display: grid; grid-template-columns: repeat(50, 1fr); gap: clamp(1px, .25vw, 2px); }
-.pgrid i { aspect-ratio: 1; border-radius: 1.5px; background: color-mix(in srgb, var(--ink) 13%, transparent); transition: background-color .5s var(--ease), box-shadow .5s; }
-.pgrid.full i, .pgrid i.lora { background: var(--neon); }
-.pgrid:not(.full) i.lora { box-shadow: 0 0 10px 2px var(--neon); }
-.params figcaption { font-weight: 600; color: var(--neon); min-height: 3em; }
+/* A fixed note that the site is still being built, bottom left on every page. */
+.dev-tag {
+  position: fixed; z-index: 40; left: clamp(16px, 2.4vw, 32px); bottom: calc(max(16px, env(safe-area-inset-bottom)) + 7px);
+  display: inline-flex; align-items: center; gap: 9px; margin: 0;
+  padding: 8px 14px; border-radius: 999px;
+  border: 1.5px dashed #ffb300; background: rgb(19 13 3 / .82); color: #ffd98a;
+  font: 650 .875rem/1 var(--code); letter-spacing: .02em;
+  box-shadow: 0 0 22px -6px #ffb300;
+  pointer-events: none;
+}
+.dev-tag i { width: 8px; height: 8px; border-radius: 50%; background: #ffb300; box-shadow: 0 0 10px #ffb300; animation: dev-pulse 1.6s ease-in-out infinite; }
+@keyframes dev-pulse { 50% { opacity: .3; } }
+/* Contact has no light, so it gets a door of its own, bottom right, on every page but itself. */
+.contact-link {
+  position: fixed; z-index: 40; right: clamp(16px, 2.4vw, 32px); bottom: max(16px, env(safe-area-inset-bottom));
+  display: inline-flex; align-items: center; min-height: 44px; padding: 0 20px; border-radius: 22px;
+  background: rgb(14 15 21 / .82); border: 1.5px solid color-mix(in srgb, #fff 55%, transparent); color: #fff;
+  font: 650 .9375rem/1 var(--code); text-decoration: none; box-shadow: 0 0 22px -8px #fff;
+  transition: background-color .2s, color .2s;
+}
+@media (hover: hover) { .contact-link:hover { background: #fff; color: #06070a; } }
+html[data-page="close"] .contact-link { display: none; }
+@media (max-width: 640px) {
+  /* Above the bar, so the two never meet. */
+  .dev-tag { bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--bar-h) + 19px); font-size: .8125rem; padding: 7px 12px; }
+  .contact-link { bottom: calc(max(16px, env(safe-area-inset-bottom)) + var(--bar-h) + 12px); }
+  html[data-page="top"] .dev-tag { bottom: calc(max(16px, env(safe-area-inset-bottom)) + 7px); }
+  html[data-page="top"] .contact-link { bottom: max(16px, env(safe-area-inset-bottom)); }
+}
 
 /* Education: one time axis for school, research, and work. */
 .timeline { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; }
@@ -526,6 +548,10 @@ a.span::before { content: ""; position: absolute; inset: -8px -2px; }
   padding-top: clamp(20px, 4.5vh, 64px);
   padding-bottom: calc(var(--bar-h) + 24px + env(safe-area-inset-bottom));
   gap: clamp(16px, 3.6vh, 52px);
+}
+@media (max-width: 640px) {
+  /* Pages leave room for the tag and the Contact button above the bar. */
+  .app .stack > .sheet:not(.hero) { padding-bottom: calc(var(--bar-h) + 78px + env(safe-area-inset-bottom)); }
 }
 .app .stack > .hero { background: transparent; }
 
