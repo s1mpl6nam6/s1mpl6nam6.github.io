@@ -3,7 +3,11 @@
    meeting at a magnet, and the element drifts a few pixels toward the pointer. Nothing reacts while
    the pointer is inside a bordered element. A canvas behind the content draws the body and spikes in
    the element's own background, and a per-element filter traces its glowing border line around the
-   merged shape, so the border follows every spike. */
+   merged shape, so the border follows every spike.
+   The element's own outline is drawn in a separate channel and kept crisp, so square and small
+   corners stay exactly as CSS drew them; spikes grow from points on that outline, spaced by
+   distance around it, so they wrap a corner instead of piling into it, and they scale with the
+   element. */
 (() => {
   if (!matchMedia('(hover: hover) and (pointer: fine)').matches) return;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
@@ -40,18 +44,38 @@
     f.id = 'ferro' + (++fid);
     f.setAttribute('color-interpolation-filters', 'sRGB');
     f.setAttribute('x', '-10%'); f.setAttribute('y', '-10%'); f.setAttribute('width', '120%'); f.setAttribute('height', '120%');
+    /* The canvas draws spikes in green and the body in red. Goo merges everything, then the red body
+       is laid back over it unblurred, so the element's corners never soften. Fill and line colours
+       are flooded in, so the channels only carry shape. */
     f.innerHTML = `
-      <feGaussianBlur in="SourceGraphic" stdDeviation="3.6" result="b"/>
-      <feColorMatrix in="b" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 26 -12" result="shape"/>
+      <feGaussianBlur in="SourceAlpha" stdDeviation="3.6" result="b"/>
+      <feColorMatrix in="b" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 26 -12" result="goo"/>
+      <feColorMatrix in="SourceGraphic" values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  1 0 0 0 0" result="red"/>
+      <feComposite in="red" in2="SourceAlpha" operator="in" result="body"/>
+      <feMerge result="shape"><feMergeNode in="goo"/><feMergeNode in="body"/></feMerge>
+      <feFlood data-k="fill" flood-color="#000" result="paint"/>
+      <feComposite in="paint" in2="shape" operator="in" result="fill"/>
       <feMorphology in="shape" operator="erode" radius="${width}" result="inner"/>
       <feComposite in="shape" in2="inner" operator="out" result="ring"/>
-      <feFlood flood-color="${color}" result="ink"/>
+      <feFlood data-k="line" flood-color="${color}" result="ink"/>
       <feComposite in="ink" in2="ring" operator="in" result="line"/>
-      <feMerge><feMergeNode in="shape"/><feMergeNode in="line"/></feMerge>`;
+      <feMerge><feMergeNode in="fill"/><feMergeNode in="line"/></feMerge>`;
     defs.append(f);
     return f;
   }
-  const opaque = c => { const [r, g, b] = rgba(c); return `rgb(${r} ${g} ${b})`; };
+  /* A colour as it actually shows: composited over the page behind the element, since the canvas
+     must be opaque where the fluid is. */
+  const behind = el => {
+    for (let n = el.parentElement; n; n = n.parentElement) {
+      const c = rgba(getComputedStyle(n).backgroundColor);
+      if (c[3] > .95) return c;
+    }
+    return [5, 6, 9, 1];
+  };
+  const shown = (c, under) => {
+    const [r, g, b, a] = rgba(c);
+    return `rgb(${[r, g, b].map((v, i) => Math.round(v * a + under[i] * (1 - a))).join(' ')})`;
+  };
 
   /* What the fluid should look like right now: size, corner, fill, and border colour all come from
      the element's current state, so it keeps up when the element morphs or changes colour. */
@@ -59,15 +83,40 @@
     const cs = getComputedStyle(el);
     const isBar = el.matches('.bar');
     const hue = cs.getPropertyValue('--hue').trim() || '#ffd9b8';
-    const line = opaque(isBar ? `color-mix(in srgb, ${hue} 60%, transparent)` : cs.borderTopColor);
-    const w = el.offsetWidth, h = el.offsetHeight;
+    const under = behind(el);
+    const fill = shown(cs.backgroundColor, under);
+    const fillRgb = rgba(fill);
+    const line = isBar ? shown(hue, fillRgb) : shown(cs.borderTopColor, fillRgb);
+    const w = el.offsetWidth, h = el.offsetHeight, cap = Math.min(w, h) / 2;
+    const radii = ['TopLeft', 'TopRight', 'BottomRight', 'BottomLeft'].map(k => Math.min(parseFloat(cs[`border${k}Radius`]) || 0, cap));
     return {
-      w, h, line,
-      glow: opaque(isBar ? hue : cs.borderTopColor),
-      fill: opaque(cs.backgroundColor),
+      w, h, line, fill, radii,
+      glow: shown(isBar ? hue : cs.borderTopColor, [0, 0, 0]),
       width: isBar ? 1 : parseFloat(cs.borderTopWidth) || 1.5,
-      radius: Math.min(parseFloat(cs.borderTopLeftRadius) || 0, h / 2),
+      bx: parseFloat(cs.borderLeftWidth) || 0, by: parseFloat(cs.borderTopWidth) || 0,
     };
+  }
+
+  /* The element's outline, sampled every pixel clockwise from the top-left, with outward normals.
+     Spikes are placed by distance along it, so near a corner they wrap round instead of stacking. */
+  function outline(w, h, [tl, tr, br, bl]) {
+    const pts = [];
+    const line = (x0, y0, x1, y1, nx, ny) => {
+      const n = Math.max(1, Math.round(Math.hypot(x1 - x0, y1 - y0)));
+      for (let i = 0; i < n; i++) pts.push([x0 + (x1 - x0) * i / n, y0 + (y1 - y0) * i / n, nx, ny]);
+    };
+    const arc = (cx, cy, r, a0) => {
+      const n = Math.max(3, Math.round(r * Math.PI / 2));
+      for (let i = 0; i < n; i++) {
+        const a = a0 + Math.PI / 2 * i / n, nx = Math.cos(a), ny = Math.sin(a);
+        pts.push([cx + nx * r, cy + ny * r, nx, ny]);
+      }
+    };
+    line(tl, 0, w - tr, 0, 0, -1); arc(w - tr, tr, tr, -Math.PI / 2);
+    line(w, tr, w, h - br, 1, 0); arc(w - br, h - br, br, 0);
+    line(w - br, h, bl, h, 0, 1); arc(bl, h - bl, bl, Math.PI / 2);
+    line(0, h - bl, 0, tl, -1, 0); arc(tl, tl, tl, Math.PI);
+    return pts;
   }
 
   /* The canvas is sized with headroom, so an element that grows a little (the bar morphing to fit
@@ -75,16 +124,22 @@
   function size(f, w, h) {
     const dpr = Math.min(devicePixelRatio || 1, 2);
     f.aw = Math.ceil(w * 1.25 + 40); f.ah = Math.ceil(h * 1.15 + 20);
-    Object.assign(f.c.style, { left: -M + 'px', top: -M + 'px', width: f.aw + 2 * M + 'px', height: f.ah + 2 * M + 'px' });
+    /* Absolute children start inside the border, so step back over it to line up with the outline. */
+    const bl = f.bx || 0, bt = f.by || 0;
+    Object.assign(f.c.style, { left: -M - bl + 'px', top: -M - bt + 'px', width: f.aw + 2 * M + 'px', height: f.ah + 2 * M + 'px' });
     f.c.width = (f.aw + 2 * M) * dpr; f.c.height = (f.ah + 2 * M) * dpr;
     f.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
   function sync(el, f) {
     const L = look(el);
+    if (L.bx !== f.bx || L.by !== f.by) { f.bx = L.bx; f.by = L.by; size(f, L.w, L.h); }
     if (L.w > f.aw || L.h > f.ah || L.w < f.aw * .6 || L.h < f.ah * .6) size(f, L.w, L.h);
-    f.w = L.w; f.h = L.h; f.radius = L.radius; f.color = L.fill;
-    if (L.line !== f.line) { f.line = L.line; f.filter.querySelector('feFlood').setAttribute('flood-color', L.line); }
+    const key = `${L.w}x${L.h}:${L.radii}`;
+    if (key !== f.key) { f.key = key; f.pts = outline(L.w, L.h, L.radii); }
+    f.w = L.w; f.h = L.h; f.radii = L.radii;
+    if (L.fill !== f.fill) { f.fill = L.fill; f.filter.querySelector('[data-k="fill"]').setAttribute('flood-color', L.fill); }
+    if (L.line !== f.line) { f.line = L.line; f.filter.querySelector('[data-k="line"]').setAttribute('flood-color', L.line); }
     if (L.width !== f.lineWidth) { f.lineWidth = L.width; f.filter.querySelector('feMorphology').setAttribute('radius', L.width); }
     if (L.glow !== f.glow) { f.glow = L.glow; f.c.style.filter = `url(#${f.filter.id}) drop-shadow(0 0 10px ${L.glow})`; }
   }
@@ -171,35 +226,51 @@
   }
 
   function draw(s, r, t) {
-    const { ctx, w, h, color, radius } = s.fluid, a = s.amt;
-    ctx.clearRect(0, 0, s.fluid.aw + 2 * M, s.fluid.ah + 2 * M);
-    s.fluid.c.classList.toggle('on', a > .01);
+    const F = s.fluid, { ctx, w, h, radii, pts } = F, a = s.amt;
+    ctx.clearRect(0, 0, F.aw + 2 * M, F.ah + 2 * M);
+    F.c.classList.toggle('on', a > .01);
     if (a <= .01) return;
-    ctx.fillStyle = color;
-    /* The body, identical to the button, so spikes grow out of it seamlessly. */
-    ctx.beginPath(); ctx.roundRect(M, M, w, h, radius); ctx.fill();
-
-    /* Pointer and nearest edge point, in canvas space. */
+    /* Everything scales with the element, so a small label grows small spikes. */
+    const k = Math.max(.42, Math.min(1, Math.min(w, h) / 44));
     const px = pointer.x - r.left + M, py = pointer.y - r.top + M;
-    const qx = Math.min(Math.max(px, M), M + w), qy = Math.min(Math.max(py, M), M + h);
-    const dist = Math.hypot(px - qx, py - qy) || 1;
-    const nx = (px - qx) / dist, ny = (py - qy) / dist, tx = -ny, ty = nx;
 
-    for (let i = 0; i < SPIKES; i++) {
-      const off = (i - (SPIKES - 1) / 2) * 24;
-      const fall = Math.exp(-((off / 46) ** 2));
-      let bx = qx + tx * off - nx * 4, by = qy + ty * off - ny * 4;
-      bx = Math.min(Math.max(bx, M + 4), M + w - 4); by = Math.min(Math.max(by, M + 4), M + h - 4);
+    /* The outline point nearest the pointer. */
+    let best = 0, bd = Infinity;
+    for (let i = 0; i < pts.length; i++) {
+      const d = (pts[i][0] + M - px) ** 2 + (pts[i][1] + M - py) ** 2;
+      if (d < bd) { bd = d; best = i; }
+    }
+    const N = pts.length, at = j => pts[((best + Math.round(j)) % N + N) % N];
+
+    /* Spikes in green. Spread along the outline, at most a third of the way round each side. */
+    ctx.fillStyle = 'rgb(0 255 0)';
+    const n = k < .8 ? 3 : SPIKES;
+    const gap = Math.max(14, Math.min(24 * k, N / (n * 2.2)));
+    for (let i = 0; i < n; i++) {
+      const off = (i - (n - 1) / 2) * gap;
+      const fall = Math.exp(-((off / (46 * k)) ** 2));
+      const [ox, oy, nx, ny] = at(off);
+      const r0 = (6 + 5 * fall) * k * k * Math.min(1, a * 1.6) + 1.5 * (1 - k);
+      const bx = ox + M - nx * r0 * .5, by = oy + M - ny * r0 * .5;
       const toP = Math.hypot(px - bx, py - by) || 1;
-      const ux = (px - bx) / toP, uy = (py - by) / toP;
-      const len = Math.min(toP - 5, 74 * a * fall * (.88 + .12 * Math.sin(t * 4 + i * 1.7)));
-      const r0 = (6 + 5 * fall) * Math.min(1, a * 1.6);
-      for (let k = 0; k <= 12; k++) {
-        const f = k / 12, rad = r0 * (1 - f) ** 1.6 + .4;
+      /* Lean toward the pointer, but keep some of the outline's own outward direction, so spikes
+         round a corner fan out instead of converging into one ramp. */
+      const vx = (px - bx) / toP + nx * .7, vy = (py - by) / toP + ny * .7, vl = Math.hypot(vx, vy) || 1;
+      const ux = vx / vl, uy = vy / vl;
+      const len = Math.min(toP * .72, 74 * (.55 + .45 * k) * a * fall * (.88 + .12 * Math.sin(t * 4 + i * 1.7)));
+      for (let q = 0; q <= 12; q++) {
+        const f = q / 12, rad = r0 * (1 - f) ** 1.6 + .4;
         ctx.beginPath(); ctx.arc(bx + ux * len * f, by + uy * len * f, rad, 0, 7); ctx.fill();
       }
     }
-    /* A low swell under the spikes, where the fluid gathers. */
-    ctx.beginPath(); ctx.ellipse(qx, qy, 34 * a, 12 * a, Math.atan2(ty, tx), 0, 7); ctx.fill();
+    /* A low swell where the fluid gathers, laid along the outline so it bends round corners. */
+    const reach = Math.min(34 * k, N / 6);
+    for (let j = -reach; j <= reach; j += 2) {
+      const [ox, oy] = at(j), g = Math.exp(-((j / reach) ** 2) * 2.2);
+      ctx.beginPath(); ctx.arc(ox + M, oy + M, 9 * k * k * a * g, 0, 7); ctx.fill();
+    }
+    /* The body in red, last, so it is never covered: the filter keeps red unblurred. */
+    ctx.fillStyle = 'rgb(255 0 0)';
+    ctx.beginPath(); ctx.roundRect(M, M, w, h, radii); ctx.fill();
   }
 })();
