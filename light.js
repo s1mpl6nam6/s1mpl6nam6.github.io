@@ -5,7 +5,7 @@
   /* The light. Seven filaments, one per project. Travel zooms into one of them: uFocus and uZoom
      magnify the field around the clicked point, uSolo fades the others, uWarp adds star streaks. */
   const FRAG = `precision highp float;
-    uniform vec2 uRes, uMouse, uFocus, uAnchor; uniform float uTime, uPower, uCell, uZoom, uWarp, uAscii, uHover, uSolo, uDim;
+    uniform vec2 uRes, uMouse, uFocus, uAnchor; uniform float uTime, uPower, uCell, uZoom, uWarp, uAscii, uHover, uFade, uSolo, uDim;
     uniform vec3 uTint;
     uniform sampler2D uGlyphs;
     const int N = 7;
@@ -34,12 +34,19 @@
         float pulse = .7 + .3 * sin(uv.x * 7. - uTime * 2.2 + f * 2.);
         float d = abs(uv.y - y);
         float flash = max(0., 1. - abs(fract(uTime * .08 + f * .143) * 3.4 - 1.2 - uv.x / aspect) * 7.);
-        bool hovered = uHover > -.5 && abs(f - uHover) < .5;
+        /* Hover: the hovered light brightens and every other light fades to a dim grey, eased by uFade. */
+        bool hovered = uFade > .001 && abs(f - uHover) < .5;
         bool chosen = uSolo > -.5 && abs(f - uSolo) < .5;
-        float w = uHover < -.5 ? 1. : (hovered ? 1.9 : .45);
+        vec3 c = hue(i);
+        float w = 1.;
+        if (hovered) w = mix(1., 1.9, uFade);
+        else if (uFade > .001) {
+          c = mix(c, vec3(dot(c, vec3(.2126, .7152, .0722))), uFade);
+          w = mix(1., .3, uFade);
+        }
         if (!chosen && !hovered) w *= 1. - uDim;
         if (uSolo > -.5 && !chosen) w *= 1. - uWarp;
-        col += hue(i) * w * ((.0011 / (d + .0009)) * pulse + (.018 / (d * 22. + 1.)) * .32) * (1. + flash * 2.4);
+        col += c * w * ((.0011 / (d + .0009)) * pulse + (.018 / (d * 22. + 1.)) * .32) * (1. + flash * 2.4);
       }
       return 1. - exp(-col * .8 * uPower * 1.5);
     }
@@ -114,10 +121,10 @@
     gl.vertexAttribPointer(gl.getAttribLocation(prog, 'p'), 2, gl.FLOAT, false, 0, 0);
     const u = n => gl.getUniformLocation(prog, n);
     const uni = { anchor: u('uAnchor'), res: u('uRes'), time: u('uTime'), power: u('uPower'), mouse: u('uMouse'), cell: u('uCell'),
-      focus: u('uFocus'), zoom: u('uZoom'), warp: u('uWarp'), ascii: u('uAscii'), hover: u('uHover'), solo: u('uSolo'), tint: u('uTint'), dim: u('uDim') };
+      focus: u('uFocus'), zoom: u('uZoom'), warp: u('uWarp'), ascii: u('uAscii'), hover: u('uHover'), fade: u('uFade'), solo: u('uSolo'), tint: u('uTint'), dim: u('uDim') };
     glyphAtlas(gl);
     gl.uniform1i(u('uGlyphs'), 0);
-    const state = { power: 0, time: 40, mx: 9, my: 0, fx: 0, fy: 0, ax: 0, ay: .1, zoom: 1, warp: 0, ascii: 0, hover: -1, solo: -1, dim: 0, track: -1, speed: 1, tint: [1, 1, 1] };
+    const state = { power: 0, time: 40, mx: 9, my: 0, fx: 0, fy: 0, ax: 0, ay: .1, zoom: 1, warp: 0, ascii: 0, hover: -1, shown: -1, fade: 0, solo: -1, dim: 0, track: -1, speed: 1, tint: [1, 1, 1] };
     const resize = () => {
       const scale = Math.min(devicePixelRatio || 1, 1.5);
       canvas.width = canvas.clientWidth * scale; canvas.height = canvas.clientHeight * scale;
@@ -135,7 +142,8 @@
       gl.uniform1f(uni.zoom, state.zoom);
       gl.uniform1f(uni.warp, state.warp);
       gl.uniform1f(uni.ascii, state.ascii);
-      gl.uniform1f(uni.hover, state.hover);
+      gl.uniform1f(uni.hover, state.shown);
+      gl.uniform1f(uni.fade, state.fade);
       gl.uniform1f(uni.solo, state.solo);
       gl.uniform1f(uni.dim, state.dim);
       gl.uniform3f(uni.tint, ...state.tint);
@@ -306,6 +314,18 @@
       /* Tracking: the camera follows a light, so the beam keeps passing through its anchor point. */
       if (f.state.track >= 0) f.state.fy = f.curveY(f.state.track, f.state.fx);
       f.frame?.(now);
+      /* Ease the hover fade. The last hovered light stays shown while the fade runs out. */
+      const st = f.state;
+      if (st.hover >= 0) st.shown = st.hover;
+      const goal = st.hover >= 0 ? 1 : 0;
+      st.fade = reduced.matches ? goal : st.fade + (goal - st.fade) * Math.min(1, dt / 90);
+      if (Math.abs(goal - st.fade) < .002) st.fade = goal;
+      const on = st.fade > .02;
+      layer.classList.toggle('focusing', st.hover >= 0);
+      items.forEach((it, n) => {
+        const lit = on && n === st.shown;
+        it.b.classList.toggle('lit', lit); it.path.classList.toggle('lit', lit); it.dot.classList.toggle('lit', lit);
+      });
       f.draw();
       f.lastDraw = now;
     }

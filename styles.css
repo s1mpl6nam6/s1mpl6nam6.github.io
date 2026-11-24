@@ -510,12 +510,6 @@ a.span::before { content: ""; position: absolute; inset: -8px -2px; }
   .list a span:first-child, .card-n { display: inline-block; }
 }
 
-/* Ferrofluid. The canvas sits behind the content and draws the element's body and spikes in its own
-   background, with the border line traced around the merged shape by a per-element filter. */
-.ferro { position: absolute; z-index: -1; pointer-events: none; opacity: 0; transition: opacity .15s; }
-.ferro.on { opacity: 1; }
-@media (prefers-reduced-motion: reduce) { .ferro { display: none; } }
-
 /* The right-click menu the cursors use to delete things. */
 .sheet > .ctx {
   position: absolute; left: 0; top: 0; z-index: 7;
@@ -608,3 +602,50 @@ html[data-page="top"] #bar { opacity: 0 !important; visibility: hidden !importan
   .head > p { font-size: 1rem; }
   .facts dd { font-size: 1.125rem; }
 }
+
+/* Hover means "this is what a click picks". Every clickable thing gets a ring in its own colour and a
+   tinted fill on hover, and presses in on click. Rows and options preview the selected look they
+   will take. */
+.tui li, .seg button, .contact a, .callout, .gantt a.span, .also a, .scroll-cue, .hero-name a {
+  transition: background-color .15s, box-shadow .15s, color .15s, scale .12s var(--ease);
+}
+.contact a { padding-inline: 12px; margin-inline: -12px; }
+@media (hover: hover) {
+  .tui li:not(.on):hover {
+    background: color-mix(in srgb, var(--neon) 16%, #11141d); color: #fff;
+    box-shadow: inset 0 0 0 1.5px var(--neon), 0 0 16px -6px var(--neon);
+  }
+  .tui li:not(.on):hover > :first-child { color: var(--neon); }
+  .seg button:not([aria-pressed="true"]):hover {
+    background: color-mix(in srgb, var(--hue) 20%, transparent);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--hue) 70%, transparent);
+  }
+  .pill:hover { background: color-mix(in srgb, currentColor 18%, transparent); box-shadow: inset 0 0 0 1.5px color-mix(in srgb, currentColor 45%, transparent); }
+  .callout:hover { border-color: var(--c); box-shadow: 0 0 0 1px var(--c), 0 0 22px -2px var(--c); }
+  .gantt a.span:hover { box-shadow: 0 0 0 2px var(--neon), 0 0 22px 0 var(--neon); }
+  .gantt a.span:hover .lbl { color: var(--ink); }
+  .contact a:hover {
+    background: color-mix(in srgb, var(--neon) 12%, transparent);
+    box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--neon) 70%, transparent);
+    border-bottom-color: transparent; border-radius: 10px;
+  }
+  .contact a:hover span:last-child { color: var(--neon); }
+  .cta:hover { background: color-mix(in srgb, var(--neon) 80%, #fff); box-shadow: 0 0 0 2px color-mix(in srgb, var(--neon) 60%, #fff), 0 0 36px -2px var(--neon); }
+  .also a:hover { background: color-mix(in srgb, var(--neon) 18%, transparent); border-radius: 4px; text-decoration-thickness: 2px; }
+  .scroll-cue:hover, .hero-name a:hover { color: #fff; }
+}
+.tui li:active, .seg button:active, .contact a:active, .callout:active, .scroll-cue:active { scale: .97; }
+@media (max-width: 640px) and (hover: hover) {
+  /* On narrow screens the drawn bar is the ::after, so the ring goes there. */
+  .gantt a.span:hover { box-shadow: none; }
+  .gantt a.span:hover::after { box-shadow: 0 0 0 2px var(--neon), 0 0 18px 0 var(--neon); }
+}
+
+/* Home: while a light is hovered, the other labels and leaders go grey and step back, so the
+   hovered one is the only thing in colour. */
+.callouts path, .callouts circle { transition: opacity .25s, stroke .25s, fill .25s; }
+.callouts .callout { transition: opacity .25s, filter .25s, background-color .15s, box-shadow .15s, scale .12s var(--ease); }
+.callouts.focusing .callout:not(.lit):not(.out) { filter: grayscale(1); opacity: .4; }
+.callouts.focusing path:not(.lit) { stroke: #6b6d75; opacity: .35; }
+.callouts.focusing circle:not(.lit) { fill: #6b6d75; opacity: .35; }
+.callout.lit { border-color: var(--c); box-shadow: 0 0 0 1px var(--c), 0 0 22px -2px var(--c); }
