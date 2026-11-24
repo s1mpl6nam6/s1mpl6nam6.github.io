@@ -432,7 +432,7 @@
     };
 
     /* Every project page: its build, a reset, and a quick right-click teardown for leaving. */
-    const DEMOS = { remitly: '.service', emg: '.score', sentry: '.service', sloth: null, symphony: '.heat', school: '.timeline', skills: '.tui', close: '.contact' };
+    const DEMOS = { emg: '.score', sloth: null, symphony: '.heat', school: '.timeline', skills: '.tui', close: '.contact' };
     const EXTRA = {
       symphony: (tl, t) => tl.from('#heat i', { scale: 0, duration: .7, ease: 'expo.out', stagger: { grid: [7, 24], from: 'center', amount: .6 } }, t),
       school: (tl, t) => tl.from('#gantt .span', { scaleX: 0, transformOrigin: '0 50%', duration: .6, ease: 'expo.out', stagger: .07 }, t),
@@ -557,23 +557,36 @@
       const x = gsap.quickTo(f.state, 'mx', { duration: .9, ease: 'power3' });
       const y = gsap.quickTo(f.state, 'my', { duration: .9, ease: 'power3' });
       const home = () => page() === 'top' && !traveling && revealed();
-      const overContent = e => e.target.closest('a, button, input, .nav, .legend, .hero-copy, .bar, .menu');
+      const overContent = e => e.target.closest('a, button, input, .nav, .legend, .hero-copy, .bar, .menu, .callout');
       addEventListener('pointermove', e => {
         if (!home()) return;
         const [ux, uy] = f.toWorld(...f.toUV(e.clientX, e.clientY));
         x(ux); y(uy);
         if (e.target.closest('.callout')) return;
         const i = overContent(e) ? -1 : hit(e.clientX, e.clientY);
-        f.state.hover = i;
+        /* An open card keeps its own light lit while the pointer is elsewhere. */
+        f.state.hover = i >= 0 ? i : (window.siteCallouts?.openIndex() ?? -1);
         document.body.style.cursor = i >= 0 ? 'pointer' : '';
       }, { passive: true });
       addEventListener('click', e => {
         if (!home() || overContent(e)) return;
         const i = hit(e.clientX, e.clientY);
-        if (i >= 0) { document.body.style.cursor = ''; window.sitePages.go(LIGHTS[i][0], true, [e.clientX, e.clientY]); }
+        /* A light whose role is a card opens the card instead of travelling; empty space closes it. */
+        if (window.siteCallouts?.has(LIGHTS[i]?.[0])) { window.siteCallouts.toggle(LIGHTS[i][0]); return; }
+        window.siteCallouts?.close();
+        if (i < 0) return;
+        document.body.style.cursor = ''; window.sitePages.go(LIGHTS[i][0], true, [e.clientX, e.clientY]);
       });
     }
 
+    /* Arriving on a card's deep link: straight to the lit field with the card open. */
+    if (page() === 'top' && root.dataset.card) {
+      intro.progress(1);
+      reveal.progress(1); want = 1;
+      if (f) f.state.power = 1;
+      window.siteCallouts?.open(root.dataset.card);
+      delete root.dataset.card;
+    }
     /* Arriving on a deep link: no intro, and the camera starts on that page's light. */
     if (page() !== 'top') {
       intro.progress(1);
@@ -593,16 +606,10 @@
 
     /* State changes keep their own feedback. */
     const scoreStrike = () => gsap.fromTo('.big', { opacity: .3 }, { keyframes: [{ opacity: 1, duration: .05 }, { opacity: .5, duration: .08 }, { opacity: 1, duration: .14 }], ease: 'none', overwrite: true });
-    const swapService = () => {
-      const s = SplitText.create('#svcName', { type: 'chars' });
-      gsap.from(s.chars, { opacity: 0, yPercent: 26, duration: .34, ease: 'expo.out', stagger: .024, onComplete: () => s.revert() });
-    };
     document.addEventListener('demo:score', scoreStrike);
-    document.addEventListener('demo:service', swapService);
     addEventListener('load', () => ScrollTrigger.refresh());
     return () => {
       document.removeEventListener('demo:score', scoreStrike);
-      document.removeEventListener('demo:service', swapService);
     };
   });
 })();

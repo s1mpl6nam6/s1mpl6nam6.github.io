@@ -64,8 +64,6 @@
       h = .5 + (raw - .5) * keep;
       return vec3(s.x, h * 1.5 - .75, s.y);
     }`;
-  const SOLID = `
-    vec3 place(vec3 s, out float h) { h = .5; return uModel * s * uScale + uShift; }`;
 
   function context(canvas) {
     const gl = canvas.getContext('webgl2', { alpha: true, premultipliedAlpha: true, antialias: false, powerPreference: 'low-power' });
@@ -135,64 +133,6 @@
     return scene;
   }
 
-  /* Smart Sentry: the four pipeline stages as solids on one orbit. */
-  function orbit(canvas, sheet) {
-    const gl = context(canvas); if (!gl) return null;
-    const p = program(gl, SOLID);
-    const g = (1 + Math.sqrt(5)) / 2;
-    const signs = [1, -1];
-    const verts = {
-      ico: signs.flatMap(a => signs.flatMap(b => [[0, a, b * g], [a, b * g, 0], [b * g, 0, a]])),
-      cube: signs.flatMap(a => signs.flatMap(b => signs.map(c => [a, b, c]))),
-      octa: [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]],
-      tetra: [[1, 1, 1], [1, -1, -1], [-1, 1, -1], [-1, -1, 1]],
-    };
-    const edges = list => {
-      const r = Math.hypot(...list[0]), n = list.map(v => v.map(x => x / r)), out = [];
-      let min = 9;
-      n.forEach((a, i) => n.forEach((b, j) => { if (j > i) min = Math.min(min, Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2])); }));
-      n.forEach((a, i) => n.forEach((b, j) => { if (j > i && Math.hypot(a[0] - b[0], a[1] - b[1], a[2] - b[2]) < min * 1.05) out.push(...a, ...b); }));
-      return out;
-    };
-    /* source, segment, tag, draft */
-    const solids = ['ico', 'cube', 'octa', 'tetra'].map((k, i) => ({
-      mesh: segments(gl, p, edges(verts[k])), spin: .22 + i * .05, tilt: i * 1.3, scale: i ? .7 : 1.15, glow: i ? .4 : 1,
-    }));
-    const scene = { angle: 0, target: 0, px: 0, py: 0, picked: 0 };
-    gl.uniform3fv(p.u('uColor'), hex(getComputedStyle(sheet).getPropertyValue('--neon').trim()));
-    gl.uniform1f(p.u('uDist'), 7); gl.uniform1f(p.u('uFocal'), 2.5); gl.uniform1f(p.u('uCore'), 1.1);
-    scene.select = i => {
-      scene.picked = i;
-      /* Take the short way round the orbit. */
-      const step = Math.PI / 2, here = Math.round(scene.target / step);
-      const delta = ((-i - here) % 4 + 6) % 4 - 2;
-      scene.target = (here + delta) * step;
-    };
-    scene.draw = (time, power, swoop, res) => {
-      const ease = reduced.matches ? 1 : .07;
-      scene.angle += (scene.target - scene.angle) * ease;
-      gl.useProgram(p);
-      gl.uniform2f(p.u('uRes'), ...res);
-      gl.uniformMatrix3fv(p.u('uView'), false, viewMatrix(scene.px * .22, .2 + scene.py * .12 + swoop * .4));
-      gl.clear(gl.COLOR_BUFFER_BIT);
-      solids.forEach((s, i) => {
-        const on = i === scene.picked;
-        s.scale += ((on ? 1.2 : .62) - s.scale) * ease;
-        s.glow += ((on ? 1 : .34) - s.glow) * ease;
-        const a = scene.angle + i * Math.PI / 2;
-        const spin = time * s.spin * (reduced.matches ? 0 : 1) + s.tilt;
-        gl.bindVertexArray(s.mesh.vao);
-        gl.uniformMatrix3fv(p.u('uModel'), false, viewMatrix(spin, s.tilt * .7));
-        gl.uniform3f(p.u('uShift'), Math.sin(a) * 2.3, Math.sin(time * .4 + i * 2) * .1, Math.cos(a) * 2.3 - .8);
-        gl.uniform1f(p.u('uScale'), s.scale);
-        gl.uniform1f(p.u('uPower'), power * s.glow);
-        gl.uniform1f(p.u('uWidth'), 8 * (res[1] / 620 + .3));
-        gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, s.mesh.count);
-      });
-    };
-    return scene;
-  }
-
   /* Runs a scene only while its sheet is near the screen and not buried under the next sheet. */
   function mount(id, build) {
     const canvas = document.getElementById(id);
@@ -245,7 +185,5 @@
   const gl_viewport = (canvas, res) => canvas.getContext('webgl2').viewport(0, 0, res[0], res[1]);
 
   const emg = mount('depthEmg', quantized);
-  const sentry = mount('depthSentry', orbit);
   document.addEventListener('demo:score', e => emg(s => { s.target = e.detail; }));
-  document.addEventListener('demo:service', e => sentry(s => s.select(e.detail)));
 })();

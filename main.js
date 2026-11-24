@@ -11,18 +11,6 @@
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 
-  /* Remitly: two projects from one internship. */
-  const REMITLY = [
-    ['$30k', 'Cut annual spend by automating mentorship matching. An LLM scores the candidate pairs, and a person moderates every match.', ['Saved', '$30k a year'], ['Stack', 'Go, DynamoDB, React, Kubernetes']],
-    ['~800k', 'An observational causal inference study of cross-border payments customers, estimating counterfactual churn while controlling for pre-treatment confounders.', ['Finding', 'Identity verification (KYC) and price changes were each associated with about 5 percentage points higher churn'], ['Tools', 'Trino SQL, Python']],
-  ];
-  const setRemitly = i => {
-    const [big, what, a, b] = REMITLY[i];
-    $('#rmBig').textContent = big;
-    $('#rmWhat').textContent = what;
-    [['#rmK1', '#rmV1', a], ['#rmK2', '#rmV2', b]].forEach(([k, v, [dt, dd]]) => { $(k).textContent = dt; $(v).textContent = dd; });
-  };
-
   /* sEMG: forgetting under each method. EWC is a range across settings, so it shows as one. */
   const METHODS = [{ name: 'replay', lo: 1.8, hi: 1.8 }, { name: 'EWC', lo: 16, hi: 28 }];
   let scoreNow = [1.8, 1.8], scoreRaf = 0;
@@ -84,21 +72,6 @@
     $('#heatNote').textContent = `${MEASURES[i]} by hour across a team's agents, one row per day. Busiest hour: ${String(peakAt).padStart(2, '0')}:00.`;
   };
 
-  /* Smart Sentry: the lead pipeline, one stage at a time. */
-  const SERVICES = [
-    ['source', 'Sourced over 10k leads.', '150 customer meetings'],
-    ['segment', 'Sorted the leads into segments, so each kind of customer gets outreach written for it.', '20% higher reply rates, with tagging'],
-    ['tag', 'Tagged every lead with signals like recent LinkedIn activity and whether an email is available.', 'Picks the outreach channel automatically'],
-    ['draft', 'Chose the channel and drafted the message, inside the CRM workflow the team already used.', 'About 80% less manual prospecting and outreach time'],
-  ];
-  const setService = i => {
-    const [n, w, res] = SERVICES[i];
-    $('#svcName').textContent = n;
-    $('#svcWhat').textContent = w;
-    $('#svcRes').textContent = res;
-    document.dispatchEvent(new CustomEvent('demo:service', { detail: i }));
-  };
-
   /* Education: everything on one time axis, January 2024 to June 2028. Bars with a page are doors. */
   const T0 = 2024, T1 = 2028.5, NOW = 2026 + 10.2 / 12;
   const ym = (y, m) => y + (m - 1) / 12;
@@ -140,9 +113,7 @@
 
   /* Controls each sheet hands to the glass bar. */
   const CONTROLS = {
-    Remitly: { label: 'Project', options: ['Matching', 'Churn study'], set: setRemitly, value: 0 },
     'sEMG paper': { label: 'Method', options: ['Replay', 'EWC'], set: setScore, value: 0 },
-    'Smart Sentry': { label: 'Stage', options: SERVICES.map(s => s[0]), set: setService, value: 0 },
     Symphony: { label: 'Measure', options: ['Prompts', 'Tokens', 'Cost'], set: setHeat, value: 0 },
     Skills: { keys: true },
   };
@@ -277,7 +248,10 @@
     if (push) history.pushState(null, '', id === 'top' ? location.pathname : '#' + id);
     document.dispatchEvent(new CustomEvent('page:change', { detail: { id, index: i } }));
   };
+  /* Remitly and Smart Sentry have no page: a link to either goes home and opens its card on the light. */
+  const CARDS = ['remitly', 'sentry'];
   const go = (id, push = true, origin = null) => {
+    if (CARDS.includes(id)) { window.siteCallouts?.open(id); id = 'top'; }
     if (!ids.includes(id) || id === document.documentElement.dataset.page) return;
     const ok = document.dispatchEvent(new CustomEvent('page:go', { detail: { id, push, origin }, cancelable: true }));
     if (ok) show(id, push);
@@ -306,7 +280,12 @@
     if (e.key === 'k') moveRow(-1);
   });
 
-  show(ids.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'top', false);
+  const first = location.hash.slice(1);
+  if (CARDS.includes(first)) {
+    document.documentElement.dataset.card = first;
+    history.replaceState(null, '', location.pathname);
+  }
+  show(ids.includes(first) ? first : 'top', false);
   document.fonts?.ready.then(() => morphBar());
 
   /* The project chips are doors too. */

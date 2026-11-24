@@ -198,21 +198,72 @@
   layer.innerHTML = '<svg class="leaders" aria-hidden="true"></svg>';
   hero.append(layer);
   const svg = layer.querySelector('svg');
+  /* A role with a card in the page (#card-<id>) has no page of its own: its label opens in place
+     into that card, and stays open until it is closed, another card opens, or the visitor clicks
+     empty space. */
+  let open = null;
+  const setOpen = it => {
+    if (open === it) return;
+    if (open) {
+      open.b.classList.remove('open');
+      open.head.setAttribute('aria-expanded', 'false');
+      open.body.hidden = true;
+      open.w = 0;
+      if (f.state.hover === open.i) f.state.hover = -1;
+    }
+    open = it;
+    if (it) {
+      it.b.classList.add('open');
+      it.head.setAttribute('aria-expanded', 'true');
+      it.body.hidden = false;
+      it.w = 0;
+      f.state.hover = it.i;
+    }
+  };
   const items = LABELS.map(([id, name, fig, color, fx], i) => {
-    const b = document.createElement('button');
-    b.type = 'button';
+    const src = document.getElementById('card-' + id);
+    const b = document.createElement(src ? 'div' : 'button');
     b.className = 'callout';
     b.style.setProperty('--c', color);
-    b.innerHTML = `<b>${name}</b><span>${fig}</span>`;
+    let head = b, body = null;
+    if (src) {
+      b.classList.add('callout-x');
+      b.innerHTML = `<button type="button" class="callout-head" aria-expanded="false" aria-controls="cb-${id}"><b>${name}</b><span>${fig}</span><i aria-hidden="true"></i></button>`;
+      head = b.firstElementChild;
+      body = document.createElement('div');
+      body.className = 'callout-body';
+      body.id = 'cb-' + id;
+      body.hidden = true;
+      body.append(...src.childNodes);
+      src.remove();
+      b.append(body);
+    } else {
+      b.type = 'button';
+      b.innerHTML = `<b>${name}</b><span>${fig}</span>`;
+    }
     const path = document.createElementNS(NS, 'path'), dot = document.createElementNS(NS, 'circle');
     path.setAttribute('stroke', color); dot.setAttribute('fill', color); dot.setAttribute('r', '3.5');
     svg.append(path, dot);
     layer.append(b);
-    const it = { i, id, b, path, dot, fx, slide: 0, side: i % 2 ? 1 : -1, len: 1, ly: null, lx: null, vx: 0, vy: 0, ax: 0, ay: 0, w: 0, h: 0, bad: 0, right: true };
-    b.addEventListener('click', () => window.sitePages?.go(id, true, [it.ax, it.ay]));
+    const it = { i, id, b, head, body, path, dot, fx, slide: 0, side: i % 2 ? 1 : -1, len: 1, ly: null, lx: null, vx: 0, vy: 0, ax: 0, ay: 0, w: 0, h: 0, bad: 0, right: true };
+    head.addEventListener('click', () => body ? setOpen(open === it ? null : it) : window.sitePages?.go(id, true, [it.ax, it.ay]));
     b.addEventListener('pointerenter', () => { f.state.hover = i; });
-    b.addEventListener('pointerleave', () => { if (f.state.hover === i) f.state.hover = -1; });
+    b.addEventListener('pointerleave', () => { if (f.state.hover === i && open !== it) f.state.hover = open ? open.i : -1; });
     return it;
+  });
+  const card = id => items.find(it => it.id === id && it.body);
+  window.siteCallouts = {
+    has: id => !!card(id),
+    open: id => setOpen(card(id) || null),
+    close: () => setOpen(null),
+    toggle: id => setOpen(open === card(id) ? null : card(id) || null),
+    openIndex: () => open ? open.i : -1,
+  };
+  addEventListener('keydown', e => {
+    if (e.key !== 'Escape' || !open) return;
+    const head = open.head, inside = !!document.activeElement?.closest('.callout-x');
+    setOpen(null);
+    if (inside) head.focus();
   });
   const blockers = () => ['.hero-name', '.scroll-cue', '.dev-tag', '.contact-link']
     .map(q => document.querySelector(q)?.getBoundingClientRect()).filter(r => r && r.width);
@@ -245,15 +296,37 @@
        tolerated). Only after it has been properly blocked for a moment does it move, and then to the
        clear place nearest where it already is, so labels settle instead of hopping. */
     const now = performance.now();
-    const placed = [];
+    const placed = [], done = new Set();
     /* Labels may never touch each other, where they are now or where they are heading. Text blocks
        get a little tolerance, so a label grazing the headline's edge does not have to move. */
     const now_ = items.map(it => it.lx == null || it.out ? null : { left: it.lx, right: it.lx + it.w, top: it.ly - it.h / 2, bottom: it.ly + it.h / 2 });
     const blocked = (r, pad, self) => r.t < 8 || r.b > innerHeight - 8 || r.l < 6 || r.r > innerWidth - 6
       || walls.some(w => hits(r, w, pad))
       || placed.some(p => p && hits(r, { left: p.l, right: p.r, top: p.t, bottom: p.b }, 4))
-      || now_.some((c, j) => c && j !== self && j < placed.length && hits(r, c, 2));
-    for (const it of items) {
+      || now_.some((c, j) => c && j !== self && done.has(j) && hits(r, c, 2));
+    /* An open card goes first, so every other label makes room for it, and it never steps out. It
+       takes the closest of its usual places, pushed inside the screen, that keeps off the page's
+       own text. */
+    const inScreen = (it, c) => {
+      const l = Math.min(Math.max(c.l, 10), innerWidth - it.w - 10);
+      const y = Math.min(Math.max(c.y, it.h / 2 + 10), innerHeight - it.h / 2 - 10);
+      return { l, r: l + it.w, t: y - it.h / 2, b: y + it.h / 2, y, cx: l + it.w / 2, right: l + it.w / 2 > it.ax };
+    };
+    const order = open ? [open, ...items.filter(it => it !== open)] : items;
+    for (const it of order) {
+      if (it === open) {
+        [it.ax, it.ay] = anchorAt(it, it.slide);
+        let best = null, score = Infinity;
+        for (const sd of [it.side, -it.side]) for (const n of LENS.keys()) {
+          const c = inScreen(it, box(it, sd, LENS[n]));
+          const d = (walls.some(w => hits(c, w, 6)) ? 1e5 : 0) + n * 20 + (sd === it.side ? 0 : 30);
+          if (d < score) { score = d; best = [sd, n, c]; }
+        }
+        [it.side, it.len] = best;
+        it.out = false; it.bad = 0;
+        placed[it.i] = best[2]; done.add(it.i);
+        continue;
+      }
       const a0 = anchorAt(it, it.slide);
       [it.ax, it.ay] = a0;
       let r = box(it, it.side, LENS[it.len]);
@@ -278,12 +351,12 @@
         if (best) { [it.slide, it.side, it.len, r] = best; [it.ax, it.ay] = best[4]; it.out = false; it.bad = 0; }
         else it.out = true;
       }
-      placed.push(it.out ? null : r);
+      placed[it.i] = it.out ? null : r; done.add(it.i);
     }
     /* Writes: labels move on a gentle spring, so even a needed move reads as a drift. The leader runs
        from the beam on a diagonal to a short shoulder, then into the label. */
-    items.forEach((it, n) => {
-      const r = placed[n];
+    items.forEach(it => {
+      const r = placed[it.i];
       it.b.classList.toggle('out', !!it.out);
       it.path.style.opacity = it.dot.style.opacity = it.out ? 0 : '';
       if (!r) return;

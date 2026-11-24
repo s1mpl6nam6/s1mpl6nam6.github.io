@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>sEMG paper mockup</title>
+<script src="../vendor/gsap.min.js" defer></script>
+<script src="../vendor/ScrollTrigger.min.js" defer></script>
+<script src="../vendor/SplitText.min.js" defer></script>
+<style>
+@font-face { font-family: "JetBrains Mono"; src: url("../fonts/jetbrains-mono-latin-wght-normal.woff2") format("woff2"); font-weight: 100 800; }
+:root {
+  --bg: #15060b; --neon: #ff4d7d; --ink: #fde6ec;
+  --muted: color-mix(in srgb, var(--ink) 70%, var(--bg));
+  --line: color-mix(in srgb, var(--ink) 12%, transparent);
+  --well: color-mix(in srgb, var(--ink) 7%, transparent);
+  --code: "JetBrains Mono", ui-monospace, Menlo, monospace;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+  /* Three methods, three strengths of the one gas. */
+  --replay: var(--neon); --ewc: #e9a3b6; --naive: #7a4b58;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 400 15px/1.55 var(--code); -webkit-font-smoothing: antialiased; }
+h1, h2, p, dl, dd, ul { margin: 0; padding: 0; }
+ul { list-style: none; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--neon); outline-offset: 3px; border-radius: 8px; }
+
+.wrap { max-width: 72rem; margin: 0 auto; padding: 0 clamp(20px, 5vw, 56px); }
+
+/* Intro: the paper, then the three questions it answers. Each question is a door to its answer. */
+.intro { min-height: 100svh; display: flex; flex-direction: column; justify-content: center; gap: 18px; padding-block: 56px 110px; }
+.venue { font-size: .875rem; color: var(--neon); font-weight: 650; }
+h1 {
+  font-size: clamp(1.9rem, 4.2vw, 3.3rem); font-weight: 500; line-height: 1.08; letter-spacing: -.03em; text-wrap: balance; max-width: 19em;
+  color: color-mix(in srgb, var(--neon) 22%, #fff);
+  text-shadow: 0 0 .05em var(--neon), 0 0 .2em var(--neon), 0 0 .8em color-mix(in srgb, var(--neon) 40%, transparent);
+}
+.lede { font-size: clamp(1rem, 1.4vw, 1.125rem); color: var(--muted); max-width: 42em; text-wrap: pretty; }
+.lede a { color: var(--neon); text-underline-offset: 3px; }
+.qs-title { margin-top: 22px; font-size: .875rem; color: var(--muted); }
+.qs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.q {
+  position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 22px;
+  min-height: 190px; padding: 18px 18px 16px; border-radius: 18px; text-decoration: none; color: var(--ink);
+  border: 1.5px solid color-mix(in srgb, var(--neon) 40%, transparent);
+  transition: border-color .2s, background-color .2s, transform .25s var(--ease);
+}
+.q .n { font-size: .8125rem; font-weight: 650; color: var(--neon); }
+.q strong { font-size: clamp(1.125rem, 1.7vw, 1.375rem); font-weight: 600; line-height: 1.25; letter-spacing: -.01em; text-wrap: balance; }
+.q .go { display: flex; justify-content: space-between; align-items: center; font-size: .8125rem; color: var(--muted); }
+.q .go i { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--neon); color: #160409; font-style: normal; font-weight: 700; transition: transform .25s var(--ease); }
+@media (hover: hover) {
+  .q:hover { border-color: var(--neon); background: color-mix(in srgb, var(--neon) 9%, transparent); transform: translateY(-3px); }
+  .q:hover .go i { transform: translateY(3px); }
+}
+.q:active { transform: scale(.98); }
+.scroll-hint { display: flex; align-items: center; gap: 8px; font-size: .8125rem; color: var(--muted); margin-top: 6px; }
+@media (prefers-reduced-motion: no-preference) { .scroll-hint span { animation: nudge 1.6s ease-in-out infinite; } }
+@keyframes nudge { 50% { transform: translateY(4px); } }
+
+/* Each answer: the question again, the short answer, and something to try. */
+.answer-sec { padding-block: clamp(64px, 11vh, 120px); border-top: 1px solid var(--line); scroll-margin-top: 0; }
+.ahead { display: grid; gap: 10px; max-width: 46rem; margin-bottom: 26px; }
+.num { font-size: .8125rem; font-weight: 650; color: var(--neon); }
+h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 500; letter-spacing: -.02em; line-height: 1.15; }
+.short { font-size: clamp(1.0625rem, 1.6vw, 1.25rem); line-height: 1.4; text-wrap: pretty; }
+.short em { font-style: normal; color: var(--neon); font-weight: 650; font-variant-numeric: tabular-nums; }
+.ahead .why { color: var(--muted); text-wrap: pretty; }
+.src { font-size: .75rem; color: var(--muted); margin-top: 20px; max-width: 60rem; }
+
+/* The control area: a labelled well, so it reads as the place to act. */
+.try { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding: 12px 16px; border-radius: 16px; background: var(--well); margin-bottom: 26px; }
+.try-label { display: inline-flex; align-items: center; gap: 8px; font-size: .75rem; font-weight: 700; color: var(--neon); letter-spacing: .06em; text-transform: uppercase; }
+.try-label svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.group { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.group > span { font-size: .8125rem; color: var(--muted); }
+.seg { display: inline-flex; gap: 4px; }
+.seg button {
+  min-height: 44px; padding: 0 16px; border-radius: 22px; cursor: pointer;
+  border: 1.5px solid color-mix(in srgb, var(--neon) 55%, transparent); background: none;
+  font-size: .875rem; font-weight: 650; white-space: nowrap;
+  transition: background-color .2s, color .2s, border-color .2s, transform .15s var(--ease);
+}
+.seg button[aria-pressed="true"] { background: var(--neon); border-color: var(--neon); color: #160409; }
+.seg button:active { transform: scale(.96); }
+@media (hover: hover) { .seg button:not([aria-pressed="true"]):hover { background: color-mix(in srgb, var(--neon) 18%, transparent); border-color: var(--neon); } }
+/* Until a section is used once, one control in it pulses so the eye finds it. */
+.hint { animation: hint 1.8s ease-in-out infinite; }
+@keyframes hint { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--neon) 60%, transparent); } 55% { box-shadow: 0 0 0 8px transparent; } }
+
+/* 01 */
+.stream { display: flex; gap: 2px; height: 10px; margin-bottom: 6px; }
+.stream i { flex: 1; border-radius: 2px; background: color-mix(in srgb, var(--neon) 45%, transparent); }
+.stream-cap { font-size: .8125rem; color: var(--muted); margin-bottom: 26px; }
+.charts { display: grid; grid-template-columns: 1fr 1fr; gap: 20px clamp(24px, 4vw, 56px); }
+.chart h3 { margin: 0 0 6px; font-size: .875rem; font-weight: 650; }
+.chart h3 span { color: var(--muted); font-weight: 400; }
+.row { display: grid; grid-template-columns: 4.6em 1fr 4em; gap: 12px; align-items: center; min-height: 40px; }
+.row > b { font-weight: 500; font-size: .875rem; color: var(--muted); }
+.track { position: relative; height: 12px; border-radius: 6px; background: var(--well); }
+.fill { position: absolute; inset: 0 auto 0 0; border-radius: 6px; background: var(--c); width: 0; transition: width .7s var(--ease); }
+.whisk { position: absolute; top: -3px; bottom: -3px; border-inline: 1.5px solid color-mix(in srgb, var(--ink) 55%, transparent); transition: left .7s var(--ease), width .7s var(--ease); }
+.val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+.row.best > b, .row.best .val { color: var(--neon); font-weight: 650; }
+.legend-methods { display: grid; gap: 4px; margin-top: 20px; font-size: .8125rem; color: var(--muted); }
+.legend-methods b { color: var(--ink); font-weight: 600; }
+
+/* 02: the 2×2 is the control. */
+.abl { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: clamp(24px, 4vw, 56px); align-items: start; }
+.grid22 { display: grid; grid-template-columns: auto 1fr 1fr; gap: 8px; }
+.grid22 > span { font-size: .8125rem; color: var(--muted); align-self: center; }
+.grid22 > span.col { text-align: center; }
+.cell {
+  display: grid; gap: 2px; justify-items: start; min-height: 84px; padding: 12px 14px; border-radius: 14px; cursor: pointer; text-align: left;
+  border: 1.5px solid color-mix(in srgb, var(--neon) 40%, transparent); background: none;
+  transition: background-color .2s, border-color .2s, transform .15s var(--ease);
+}
+.cell b { font-size: 1.375rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cell small { font-size: .75rem; color: var(--muted); }
+.cell.low b { color: var(--muted); }
+.cell[aria-pressed="true"] { background: var(--neon); border-color: var(--neon); color: #160409; }
+.cell[aria-pressed="true"] small, .cell[aria-pressed="true"].low b { color: #160409; }
+.cell:active { transform: scale(.97); }
+@media (hover: hover) { .cell:not([aria-pressed="true"]):hover { background: color-mix(in srgb, var(--neon) 14%, transparent); border-color: var(--neon); } }
+.grid-cap { grid-column: 2 / -1; font-size: .75rem; color: var(--muted); }
+.result { display: grid; gap: 18px; }
+.verdict b { display: block; font-size: clamp(1.6rem, 3.2vw, 2.4rem); font-weight: 500; letter-spacing: -.02em; color: color-mix(in srgb, var(--neon) 22%, #fff); }
+.verdict.low b { color: var(--ink); }
+.verdict p { color: var(--muted); margin-top: 4px; text-wrap: pretty; min-height: 4.6em; }
+.gauge { position: relative; height: 14px; border-radius: 7px; background: var(--well); margin-top: 20px; }
+.band { position: absolute; top: 0; bottom: 0; border-radius: 7px; background: var(--neon); transition: left .6s var(--ease), width .6s var(--ease), background-color .3s; }
+.band.low { background: var(--naive); }
+.thresh { position: absolute; top: -20px; bottom: -4px; left: 60%; border-left: 1.5px dashed var(--muted); }
+.thresh span { position: absolute; top: 0; left: 6px; font-size: .6875rem; color: var(--muted); white-space: nowrap; }
+.axis { display: flex; justify-content: space-between; font-size: .6875rem; color: var(--muted); margin-top: 4px; }
+.strip-label { display: flex; justify-content: space-between; gap: 12px; font-size: .8125rem; color: var(--muted); margin-bottom: 6px; }
+.strip-label i { font-style: normal; font-size: .6875rem; border: 1px dashed currentColor; border-radius: 999px; padding: 0 7px; }
+.strip { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; }
+.strip i { height: 16px; border-radius: 3px; background: var(--g); transition: background-color .35s; }
+.key { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: .75rem; color: var(--muted); margin-top: 8px; }
+.key span::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 2px; background: var(--g); margin-right: 6px; }
+
+/* 03 */
+.rate { display: flex; align-items: center; gap: 12px; flex: 1 1 18rem; }
+.rate input { flex: 1; accent-color: var(--neon); min-height: 44px; cursor: pointer; border-radius: 999px; }
+.rate output { min-width: 7.5em; font-weight: 650; font-variant-numeric: tabular-nums; }
+.cost { display: grid; grid-template-columns: auto 1fr 1fr; gap: 0 clamp(16px, 3vw, 40px); align-items: center; }
+.cost > * { padding-block: 14px; border-bottom: 1px solid var(--line); }
+.cost .h { font-size: 1.25rem; font-weight: 600; color: color-mix(in srgb, var(--neon) 22%, #fff); }
+.cost .k { font-size: .8125rem; color: var(--muted); }
+.cost .k small { display: block; font-size: .6875rem; }
+.cost .v { display: grid; gap: 6px; }
+.cost .v b { font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.cost .v small { color: var(--muted); font-weight: 400; font-size: .75rem; }
+
+.foot { padding-block: 48px 120px; border-top: 1px solid var(--line); color: var(--muted); font-size: .8125rem; }
+
+/* Bar: Back, and the three questions, lit as you scroll. */
+.bar { position: fixed; left: 50%; bottom: 16px; translate: -50% 0; z-index: 5; display: flex; gap: 2px; align-items: center; height: 56px; padding: 6px; border-radius: 28px; max-width: calc(100vw - 24px);
+  background: rgb(14 15 21 / .72); -webkit-backdrop-filter: blur(14px) saturate(190%); backdrop-filter: blur(14px) saturate(190%);
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / .7), inset 0 0 0 1px color-mix(in srgb, var(--neon) 45%, transparent); }
+.bar a { display: inline-flex; align-items: center; gap: 6px; height: 44px; padding: 0 14px; border-radius: 22px; color: var(--ink); text-decoration: none; font-weight: 600; font-size: .875rem; white-space: nowrap; transition: background-color .2s, color .2s; }
+.bar a.on { background: var(--neon); color: #160409; }
+.bar a svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+@media (hover: hover) { .bar a:not(.on):hover { background: color-mix(in srgb, #fff 12%, transparent); } }
+.mock { position: fixed; top: 12px; right: 12px; z-index: 6; font-size: .75rem; font-weight: 650; color: #ffd98a; border: 1.5px dashed #ffb300; border-radius: 999px; padding: 4px 10px; background: rgb(19 13 3 / .85); }
+
+@media (max-width: 820px) {
+  .qs, .charts, .abl { grid-template-columns: 1fr; }
+  .q { min-height: 0; flex-direction: row; align-items: center; gap: 14px; padding: 14px 16px; }
+  .q .go span { display: none; }
+  .bar .back span, .bar .n { display: none; }
+  .bar a { padding: 0 11px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } *, *::before, *::after { transition: none !important; animation: none !important; } }
+
+/* How it works: a wireframe arm with numbered points. */
+.arm-sec { padding-block: clamp(56px, 9vh, 100px); border-top: 1px solid var(--line); }
+.arm-fig { position: relative; aspect-ratio: 920 / 235; margin-top: 8px; }
+#arm { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+#arm .finger rect, #arm .finger circle { vector-effect: non-scaling-stroke; }
+#arm .mesh path { fill: none; stroke: var(--ink); stroke-width: 1; opacity: .38; }
+#arm .mesh.back path { opacity: .12; }
+#arm .edge path { fill: none; stroke: var(--ink); stroke-width: 1.6; opacity: .85; }
+#arm .finger rect { fill: color-mix(in srgb, var(--ink) 5%, var(--bg)); stroke: var(--ink); stroke-width: 1.3; opacity: .9; }
+#arm .finger circle { fill: var(--bg); stroke: var(--ink); stroke-width: 1.2; }
+#arm .electrode { fill: var(--neon); }
+#arm .electrode.back { opacity: .3; }
+#arm .trace { fill: none; stroke: var(--neon); stroke-width: 1.2; opacity: .55; stroke-dasharray: 3 4; }
+#arm .chip { fill: color-mix(in srgb, var(--neon) 14%, var(--bg)); stroke: var(--neon); stroke-width: 1.4; }
+#arm .chip-pin { stroke: var(--neon); stroke-width: 1.2; }
+#arm .pulse { fill: var(--neon); }
+#arm .chip-label { fill: var(--neon); font: 700 11px var(--code); letter-spacing: .06em; }
+.spot {
+  position: absolute; translate: -50% -50%; z-index: 2;
+  display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; border: 0; cursor: pointer;
+  background: var(--neon); color: #160409; font-weight: 750; font-size: .8125rem;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--neon) 25%, transparent), 0 0 18px -2px var(--neon);
+  transition: transform .2s var(--ease), background-color .2s;
+}
+/* A larger invisible target, so the dot is easy to hit. */
+.spot::before { content: ""; position: absolute; inset: -6px; border-radius: 50%; }
+.spot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--neon); animation: ping 2.2s ease-out infinite; animation-delay: var(--d, 0s); pointer-events: none; }
+@keyframes ping { 0% { transform: scale(1); opacity: .8; } 70%, 100% { transform: scale(2.1); opacity: 0; } }
+.spot[aria-expanded="true"] { background: #fff; }
+.spot[aria-expanded="true"]::after { animation: none; opacity: 0; }
+@media (hover: hover) { .spot:hover { transform: scale(1.12); } }
+.tip {
+  position: absolute; z-index: 3; width: min(320px, 86vw); padding: 14px 16px 12px; border-radius: 14px;
+  background: color-mix(in srgb, var(--ink) 6%, #0b0a0d); border: 1px solid color-mix(in srgb, var(--neon) 55%, transparent);
+  box-shadow: 0 18px 40px -12px rgb(0 0 0 / .8), 0 0 24px -10px var(--neon);
+  font-size: .8125rem; line-height: 1.5; color: var(--muted);
+}
+.tip[hidden] { display: none; }
+.tip h3 { margin: 0 0 6px; font-size: 1rem; color: var(--ink); font-weight: 650; padding-right: 28px; }
+.tip .x { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; font-size: 1.1rem; }
+.tip .x:hover { background: var(--well); color: var(--ink); }
+.tip a { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; min-height: 36px; padding: 0 12px; border-radius: 18px; background: var(--neon); color: #160409; font-weight: 650; text-decoration: none; }
+@media (prefers-reduced-motion: no-preference) { .tip:not([hidden]) { animation: tip-in .25s var(--ease); } }
+@keyframes tip-in { from { opacity: 0; translate: 0 6px; } }
+.channels { margin-top: 18px; max-width: 34rem; }
+.chan { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; height: 56px; align-items: end; }
+.chan i { display: block; height: 100%; border-radius: 3px; background: var(--neon); transform-origin: bottom; transform: scaleY(var(--v, .1)); opacity: calc(.35 + var(--v, .1) * .65); transition: transform .6s var(--ease), opacity .6s; }
+@media (max-width: 700px) {
+  .arm-fig { aspect-ratio: 920 / 260; }
+  .spot { width: 28px; height: 28px; font-size: .75rem; }
+  /* On a phone the tooltip sits under the drawing, full width. */
+  .tip { position: relative; left: 0 !important; top: 0 !important; width: 100%; margin-top: 12px; }
+  .arm-stage { display: flex; flex-direction: column; }
+}
+
+/* Before a section is reached its bars sit empty, then fill once it is on screen. */
+.answer-sec.pre .fill, .answer-sec.pre .band { width: 0 !important; }
+
+/* Palette previews (mockup only). Each keeps rose as the one accent for answers and controls. */
+.pal { position: fixed; top: 12px; left: 12px; z-index: 6; display: flex; flex-wrap: wrap; gap: 4px; align-items: center; max-width: calc(100vw - 110px); padding: 4px; border-radius: 18px; background: rgb(14 15 21 / .88); border: 1px solid rgb(255 255 255 / .15); font-size: .75rem; }
+.pal span { padding: 0 6px; color: #aaa; }
+.pal button { min-height: 30px; padding: 0 10px; border: 0; border-radius: 999px; background: none; color: #ddd; cursor: pointer; font-weight: 600; }
+.pal button[aria-pressed="true"] { background: #fff; color: #000; }
+/* A, B, C share a neutral ground; rose stays only where it means something. */
+[data-palette] { --bg: #0d0c0f; --ink: #ecebef; --naive: #4a4851; --ewc: #8e8b96; }
+[data-palette] h1, [data-palette] .cost .h, [data-palette] .verdict b { color: #fff; text-shadow: none; }
+[data-palette] .q { border-color: var(--line); background: color-mix(in srgb, #fff 3%, transparent); }
+[data-palette] .cell, [data-palette] .seg button:not([aria-pressed="true"]) { border-color: color-mix(in srgb, var(--ink) 26%, transparent); }
+[data-palette] .stream i { background: color-mix(in srgb, var(--ink) 28%, transparent); }
+/* B: one cool hue against the rose, so comparisons read as two colours, not shades of one red. */
+[data-palette="cool"] { --ewc: #8fb0ff; }
+[data-palette="cool"] .m-ewc { color: #8fb0ff; }
+[data-palette="cool"] #costTable .v:nth-child(3n) .fill { background: #8fb0ff !important; }
+/* C: each question takes the colour of one of the site's lights. */
+[data-palette="lights"] #q2 { --neon: #ffb300; }
+[data-palette="lights"] #q3 { --neon: #22e6ff; }
+[data-palette="lights"] #q3 .fill { background: #22e6ff !important; }
+</style>
+</head>
+<body>
+<p class="mock">Mockup</p>
+<div class="pal" role="group" aria-label="Palette preview"><span>Palette</span><button data-p="rose" aria-pressed="true">Current</button><button data-p="neutral" aria-pressed="false">A Neutral</button><button data-p="cool" aria-pressed="false">B + Blue</button><button data-p="lights" aria-pressed="false">C Site lights</button></div>
+
+<main>
+  <header class="intro wrap" id="top">
+    <p class="venue">IEEE BioCAS 2026 · first author</p>
+    <h1>Cross-User Adaptation for sEMG Gesture Recognition via Continual Learning</h1>
+    <p class="lede">A gesture model reads forearm muscle signals (sEMG), as a prosthetic hand would. When it learns a new person or new gestures, it tends to forget the ones before. <a href="https://arxiv.org/abs/2610.34011">Read the paper</a></p>
+    <p class="qs-title">The paper answers three questions. Pick one, or scroll.</p>
+    <nav class="qs" aria-label="Questions">
+      <a class="q" href="#q1"><span class="n">01</span><strong>Which method forgets the least?</strong><span class="go"><span>See the answer</span><i aria-hidden="true">↓</i></span></a>
+      <a class="q" href="#q2"><span class="n">02</span><strong>Why does training collapse?</strong><span class="go"><span>See the answer</span><i aria-hidden="true">↓</i></span></a>
+      <a class="q" href="#q3"><span class="n">03</span><strong>What would this model cost on a prosthetic?</strong><span class="go"><span>See the answer</span><i aria-hidden="true">↓</i></span></a>
+    </nav>
+    <p class="scroll-hint"><span aria-hidden="true">↓</span> Each answer is interactive</p>
+  </header>
+
+  <!-- How it works: the arm -->
+  <section class="arm-sec wrap" id="how" aria-labelledby="h-how">
+    <div class="ahead">
+      <p class="num">How it works</p>
+      <h2 id="h-how">From a muscle signal to a moving hand</h2>
+      <p class="why">Tap a numbered point to learn what that part does. Each one links to the question it answers.</p>
+    </div>
+    <div class="arm-stage">
+      <div class="try">
+        <span class="try-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 013 0V10m0 0V4.5a1.5 1.5 0 013 0V10m0 0V6.5a1.5 1.5 0 013 0V14a6 6 0 01-6 6h-1.2a5 5 0 01-4-2L4.3 14.4a1.5 1.5 0 012.3-1.9L9 15"/></svg>Try a gesture</span>
+        <div class="seg" id="gestures" role="group" aria-label="Gesture">
+          <button aria-pressed="true" data-g="open">Open hand</button><button aria-pressed="false" data-g="fist" class="hint">Fist</button><button aria-pressed="false" data-g="point">Point</button><button aria-pressed="false" data-g="pinch">Pinch</button>
+        </div>
+      </div>
+      <div class="arm-fig">
+        <svg id="arm" viewBox="40 145 920 235" role="img" aria-label="Wireframe of a prosthetic forearm and hand: a band of electrodes, a model chip, and jointed fingers"></svg>
+        <div id="spots"></div>
+        <div class="tip" id="tip" role="dialog" aria-live="polite" hidden></div>
+      </div>
+      <div class="channels">
+        <p class="strip-label"><span>What the 10 electrodes pick up</span><i>illustration</i></p>
+        <div class="chan" id="chan" aria-hidden="true"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 01: Table I -->
+  <section class="answer-sec wrap" id="q1" aria-labelledby="h1q">
+    <div class="ahead">
+      <p class="num">01</p>
+      <h2 id="h1q">Which method forgets the least?</h2>
+      <p class="short" id="short1" aria-live="polite"></p>
+      <p class="why">The model learns tasks one after another. At the end, I measured how well it handles all of them, and how much it lost on the early ones.</p>
+    </div>
+    <div class="try">
+      <span class="try-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 013 0V10m0 0V4.5a1.5 1.5 0 013 0V10m0 0V6.5a1.5 1.5 0 013 0V14a6 6 0 01-6 6h-1.2a5 5 0 01-4-2L4.3 14.4a1.5 1.5 0 012.3-1.9L9 15"/></svg>Try it</span>
+      <div class="group"><span>Each task adds</span><div class="seg" data-key="setting" role="group" aria-label="Each task adds">
+        <button aria-pressed="true" data-v="dil">a new person</button><button aria-pressed="false" data-v="cil" class="hint">new gestures</button></div></div>
+      <div class="group"><span>Model</span><div class="seg" data-key="model" role="group" aria-label="Model">
+        <button aria-pressed="true" data-v="HGRN">HGRN</button><button aria-pressed="false" data-v="LSTM">LSTM</button></div></div>
+    </div>
+    <div class="stream" id="stream" aria-hidden="true"></div>
+    <p class="stream-cap" id="streamCap"></p>
+    <div class="charts">
+      <div class="chart"><h3>Final accuracy <span>· higher is better</span></h3><div id="acc"></div></div>
+      <div class="chart"><h3>Forgetting <span>· lower is better</span></h3><div id="frg"></div></div>
+    </div>
+    <ul class="legend-methods">
+      <li><b>naive</b> keeps training on each new task.</li>
+      <li><b>EWC</b> penalizes changes to weights that mattered for earlier tasks.</li>
+      <li><b>replay</b> mixes 16 stored examples from earlier tasks into every batch.</li>
+    </ul>
+    <p class="src">NinaPro DB1, time-domain features. Lines on the accuracy bars show ±1 std. Table I.</p>
+  </section>
+
+  <!-- 02: Fig. 2 -->
+  <section class="answer-sec wrap" id="q2" aria-labelledby="h2q">
+    <div class="ahead">
+      <p class="num">02</p>
+      <h2 id="h2q">Why does training collapse?</h2>
+      <p class="short">Batch order. Fed in recording order, the model sees mostly rest and learns to predict <em>rest</em> for everything. The recurrent state was the other suspect, and it was not the cause.</p>
+    </div>
+    <div class="abl">
+      <div>
+        <div class="try" style="margin-bottom:14px">
+          <span class="try-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 013 0V10m0 0V4.5a1.5 1.5 0 013 0V10m0 0V6.5a1.5 1.5 0 013 0V14a6 6 0 01-6 6h-1.2a5 5 0 01-4-2L4.3 14.4a1.5 1.5 0 012.3-1.9L9 15"/></svg>Pick a combination</span>
+        </div>
+        <div class="grid22" role="group" aria-label="Ablation combinations">
+          <span></span><span class="col">batches in order</span><span class="col">batches shuffled</span>
+          <span>carry state</span><button class="cell" data-k="0-1"></button><button class="cell hint" data-k="1-1"></button>
+          <span>reset state</span><button class="cell" data-k="0-0"></button><button class="cell" data-k="1-0"></button>
+          <p class="grid-cap">Plasticity: accuracy late in training on recent tasks.</p>
+        </div>
+      </div>
+      <div class="result">
+        <div class="verdict" id="verdict" aria-live="polite"><b id="vTitle"></b><p id="vTxt"></p></div>
+        <div>
+          <div class="gauge" aria-hidden="true"><div class="band" id="band"></div><div class="thresh"><span>60%: below this it is frozen</span></div></div>
+          <div class="axis" aria-hidden="true"><span>0%</span><span>plasticity</span><span>100%</span></div>
+        </div>
+        <div>
+          <p class="strip-label"><span>One training batch</span><i>illustration</i></p>
+          <div class="strip" id="batch" aria-hidden="true"></div>
+        </div>
+        <div>
+          <p class="strip-label"><span>What the model predicts</span><i>illustration</i></p>
+          <div class="strip" id="preds" aria-hidden="true"></div>
+          <p class="key"><span style="--g:#4a2430">rest</span><span style="--g:#ff4d7d">gesture A</span><span style="--g:#e9a3b6">gesture B</span><span style="--g:#a8305a">gesture C</span></p>
+        </div>
+      </div>
+    </div>
+    <p class="src">Fig. 2, new-person setting. The paper gives a range for each combination, and one range for both in-order cells. The two strips sketch the mechanism and are not measured.</p>
+  </section>
+
+  <!-- 03: Table III -->
+  <section class="answer-sec wrap" id="q3" aria-labelledby="h3q">
+    <div class="ahead">
+      <p class="num">03</p>
+      <h2 id="h3q">What would this model cost on a prosthetic?</h2>
+      <p class="short" id="short3"></p>
+      <p class="why">A prosthetic hand runs on a small battery-powered chip, so model size and compute per prediction decide what it can run. HGRN is a gated recurrent network with a linear state update. The LSTM is the usual baseline.</p>
+    </div>
+    <div class="try">
+      <span class="try-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 11V5.5a1.5 1.5 0 013 0V10m0 0V4.5a1.5 1.5 0 013 0V10m0 0V6.5a1.5 1.5 0 013 0V14a6 6 0 01-6 6h-1.2a5 5 0 01-4-2L4.3 14.4a1.5 1.5 0 012.3-1.9L9 15"/></svg>Try it</span>
+      <label class="rate"><span class="group"><span>Predictions a second</span></span><input type="range" id="rate" min="1" max="100" value="20" class="hint"><output id="rateOut" for="rate"></output></label>
+      <div class="group"><span>Each task adds</span><div class="seg" data-key="costSetting" role="group" aria-label="Each task adds">
+        <button aria-pressed="true" data-v="dil">a new person</button><button aria-pressed="false" data-v="cil">new gestures</button></div></div>
+    </div>
+    <div class="cost" id="costTable"></div>
+    <p class="src">Parameters, FLOPs per window, and accuracy come from Tables I and III. Memory assumes 32-bit weights, and compute per second is FLOPs per window times the rate you pick. Neither is measured on hardware.</p>
+  </section>
+
+  <footer class="foot wrap">
+    <p>Ramakrishnan, Mishra, Ham, Kembay, Eshraghian. Neuromorphic Computing Group, UC Santa Cruz. <a href="https://arxiv.org/abs/2610.34011" style="color:var(--neon)">arXiv 2610.34011</a></p>
+  </footer>
+</main>
+
+<nav class="bar" aria-label="Page">
+  <a class="back" href="#top"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M12 5l-5 5 5 5"/></svg><span>Back</span></a>
+  <a href="#how" data-sec="how">How</a>
+  <a href="#q1" data-sec="q1"><span class="n">01 </span>Forgetting</a>
+  <a href="#q2" data-sec="q2"><span class="n">02 </span>Collapse</a>
+  <a href="#q3" data-sec="q3"><span class="n">03 </span>Cost</a>
+</nav>
+
+<script>
+addEventListener('DOMContentLoaded', () => {
+  const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+  const pct = v => (v * 100).toFixed(1) + '%';
+
+  /* Table I: [final accuracy, std, forgetting]. Time-domain features, stateless. */
+  const T1 = {
+    dil: { HGRN: { naive: [.644, .03, .176], EWC: [.641, .05, .168], replay: [.763, .01, .043] },
+           LSTM: { naive: [.627, .02, .212], EWC: [.681, .01, .162], replay: [.757, .01, .058] } },
+    cil: { HGRN: { naive: [.659, .09, .239], EWC: [.682, .08, .220], replay: [.816, .06, .018] },
+           LSTM: { naive: [.679, .05, .245], EWC: [.679, .07, .285], replay: [.833, .07, .023] } },
+  };
+  const METHODS = ['naive', 'EWC', 'replay'];
+  const COLOR = { naive: 'var(--naive)', EWC: 'var(--ewc)', replay: 'var(--replay)' };
+  const st = { setting: 'dil', model: 'HGRN', costSetting: 'dil' };
+
+  /* A section's pulse stops once anything in it has been used. */
+  const used = el => el.closest('.answer-sec').querySelectorAll('.hint').forEach(h => h.classList.remove('hint'));
+
+  const rows = (host, whisk) => METHODS.map(m => {
+    const r = document.createElement('div');
+    r.className = 'row';
+    r.innerHTML = `<b>${m}</b><div class="track"><i class="fill" style="--c:${COLOR[m]}"></i>${whisk ? '<i class="whisk"></i>' : ''}</div><span class="val"></span>`;
+    host.append(r);
+    return r;
+  });
+  const accRows = rows($('#acc'), true), frgRows = rows($('#frg'), false);
+
+  const renderMethods = () => {
+    const d = T1[st.setting][st.model];
+    const bestA = METHODS.reduce((a, b) => d[a][0] >= d[b][0] ? a : b);
+    const bestF = METHODS.reduce((a, b) => d[a][2] <= d[b][2] ? a : b);
+    METHODS.forEach((m, i) => {
+      const [acc, sd, frg] = d[m];
+      accRows[i].querySelector('.fill').style.width = acc * 100 + '%';
+      const w = accRows[i].querySelector('.whisk');
+      w.style.left = (acc - sd) * 100 + '%'; w.style.width = sd * 200 + '%';
+      accRows[i].querySelector('.val').textContent = pct(acc);
+      accRows[i].classList.toggle('best', m === bestA);
+      /* Forgetting is drawn on a 0 to 30% scale so the small values stay visible. */
+      frgRows[i].querySelector('.fill').style.width = frg / .3 * 100 + '%';
+      frgRows[i].querySelector('.val').textContent = pct(frg);
+      frgRows[i].classList.toggle('best', m === bestF);
+    });
+    const s = $('#stream');
+    s.replaceChildren();
+    if (st.setting === 'dil') {
+      for (let i = 0; i < 27; i++) s.append(document.createElement('i'));
+      $('#streamCap').textContent = '27 tasks in a row, one per person, all with the same 12 gestures.';
+    } else {
+      [12, 17, 23].forEach(g => { const c = document.createElement('i'); c.style.flex = g; s.append(c); });
+      $('#streamCap').textContent = '3 tasks in a row, adding 12, then 17, then 23 gestures the model has never seen.';
+    }
+    const ewc = d.EWC[2], rep = d.replay[2];
+    $('#short1').innerHTML = `Replay. With ${st.model}, it forgets <em>${pct(rep)}</em> while EWC forgets <em class="m-ewc">${pct(ewc)}</em>, about ${Math.round(ewc / rep)}× more.`;
+  };
+
+  /* Fig. 2: plasticity range for each cell. */
+  const CELLS = {
+    '0-1': { lo: .27, hi: .45, title: 'Collapses', txt: 'In recording order, a batch is mostly rest, so the gradient pushes everything toward "rest". The model ends up predicting rest every time.' },
+    '0-0': { lo: .27, hi: .45, title: 'Freezes', txt: 'Resetting the state does not help, because the order is still the problem. This combination freezes completely.' },
+    '1-1': { lo: .68, hi: .76, title: 'Learns, with noise', txt: 'Shuffled batches mix every gesture, so it learns. A state carried over from an unrelated batch acts like a random start, which costs accuracy.' },
+    '1-0': { lo: .94, hi: .95, title: 'Learns', txt: 'Shuffled batches and a fresh state each time. This is the stable setup, and the one the method comparison uses.' },
+  };
+  const G = { rest: '#4a2430', A: '#ff4d7d', B: '#e9a3b6', C: '#a8305a' };
+  /* A recording: long rests with short gestures between them. */
+  const rec = [];
+  ['A', 'B', 'C', 'A', 'B', 'C'].forEach(g => { for (let i = 0; i < 9; i++) rec.push('rest'); for (let i = 0; i < 4; i++) rec.push(g); });
+  const strip = id => Array.from({ length: 24 }, () => $(id).appendChild(document.createElement('i')));
+  const bCells = strip('#batch'), pCells = strip('#preds');
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const cells = $$('.cell');
+  const renderAbl = k => {
+    cells.forEach(b => b.setAttribute('aria-pressed', b.dataset.k === k));
+    const c = CELLS[k], shuffle = k[0] === '1', low = c.hi < .6;
+    const picks = shuffle ? bCells.map(() => rec[Math.floor(rnd() * rec.length)]) : rec.slice(2, 26);
+    bCells.forEach((el, i) => el.style.setProperty('--g', G[picks[i]]));
+    const truth = rec.slice(5, 29);
+    pCells.forEach((el, i) => {
+      let p = truth[i];
+      if (low) p = 'rest';
+      else if (rnd() > (c.lo + c.hi) / 2) p = ['rest', 'A', 'B', 'C'][Math.floor(rnd() * 4)];
+      el.style.setProperty('--g', G[p]);
+    });
+    const band = $('#band');
+    band.style.left = c.lo * 100 + '%';
+    band.style.width = Math.max(c.hi - c.lo, .015) * 100 + '%';
+    band.classList.toggle('low', low);
+    $('#verdict').classList.toggle('low', low);
+    $('#vTitle').textContent = `${c.title}: ${Math.round(c.lo * 100)}–${Math.round(c.hi * 100)}%`;
+    $('#vTxt').textContent = c.txt;
+  };
+  cells.forEach(b => {
+    const c = CELLS[b.dataset.k];
+    b.classList.toggle('low', c.hi < .6);
+    b.innerHTML = `<b>${Math.round(c.lo * 100)}–${Math.round(c.hi * 100)}%</b><small>${c.title.toLowerCase()}</small>`;
+    b.addEventListener('click', () => { renderAbl(b.dataset.k); used(b); });
+  });
+
+  /* Table III, with replay accuracy from Table I. Memory and compute per second are arithmetic on
+     those figures, labelled as such on the page. */
+  const COST = { dil: { HGRN: [339e3, 6.68e6], LSTM: [538e3, 10.62e6] }, cil: { HGRN: [345e3, 6.70e6], LSTM: [543e3, 10.63e6] } };
+  const fmtF = f => f >= 1e9 ? (f / 1e9).toFixed(2) + ' GFLOP/s' : Math.round(f / 1e6) + ' MFLOP/s';
+  const renderCost = () => {
+    const s = st.costSetting, C = COST[s], rate = +$('#rate').value;
+    $('#rateOut').textContent = `${rate} / second`;
+    const bar = (v, max, c) => `<div class="track"><i class="fill" style="--c:${c};width:${Math.min(v / max, 1) * 100}%"></i></div>`;
+    const M = ['HGRN', 'LSTM'];
+    $('#costTable').innerHTML = `<span></span>${M.map(m => `<span class="h">${m}</span>`).join('')}
+      <span class="k">Compute<small>at ${rate} predictions a second</small></span>${M.map(m => `<span class="v"><b>${fmtF(C[m][1] * rate)}</b>${bar(C[m][1] * rate, 1.1e9, 'var(--neon)')}</span>`).join('')}
+      <span class="k">Memory for weights<small>32-bit</small></span>${M.map(m => `<span class="v"><b>${(C[m][0] * 4 / 1e6).toFixed(2)} MB</b>${bar(C[m][0], 560e3, 'var(--ewc)')}</span>`).join('')}
+      <span class="k">Accuracy with replay</span>${M.map(m => { const [a, sd] = T1[s][m].replay; return `<span class="v"><b>${pct(a)} <small>± ${Math.round(sd * 100)} pts</small></b>${bar(a, 1, 'var(--ewc)')}</span>`; }).join('')}`;
+    const saved = (C.LSTM[1] - C.HGRN[1]) * rate;
+    $('#short3').innerHTML = `HGRN does the same job for <em>${(C.LSTM[1] / C.HGRN[1]).toFixed(1)}× less</em> compute and ${Math.round((1 - C.HGRN[0] / C.LSTM[0]) * 100)}% fewer weights. At ${rate} predictions a second, that saves ${fmtF(saved)}.`;
+  };
+  $('#rate').addEventListener('input', e => { renderCost(); used(e.target); });
+
+  $$('.seg[data-key]').forEach(seg => seg.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    st[seg.dataset.key] = b.dataset.v;
+    used(seg);
+    seg.dataset.key === 'costSetting' ? renderCost() : renderMethods();
+  }));
+
+  /* The bar lights the question in view. */
+  const links = $$('.bar a[data-sec]');
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.dataset.sec === e.target.id));
+  }), { rootMargin: '-45% 0px -50% 0px' });
+  $$('.answer-sec, .intro, .arm-sec').forEach(s => io.observe(s));
+
+  renderMethods(); renderAbl('0-1'); renderCost();
+
+  /* The arm. Built from code so its wireframe follows one shape: a tapered tube for the forearm,
+     a short one for the wrist, a flat one for the palm, and jointed fingers. Seen from above, back of
+     the hand up. */
+  const NS = 'http://www.w3.org/2000/svg';
+  const arm = $('#arm');
+  const mk = (tag, attrs, parent = arm) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); parent.append(e); return e; };
+  const back = mk('g', { class: 'mesh back' }), front = mk('g', { class: 'mesh' }), edge = mk('g', { class: 'edge' });
+  /* A tube from x0 to x1 with half-height H(x) around centre C(x). Lines run along it at fixed angles
+     round the tube, and rings cross it, front halves bright and back halves faint. */
+  const tube = (x0, x1, H, C, rings) => {
+    const at = (x, phi) => { const h = H(x); return [x + .22 * h * Math.sin(phi), C(x) - h * Math.cos(phi)]; };
+    for (let k = 0; k < 12; k++) {
+      const phi = k * Math.PI / 6;
+      let d = '';
+      for (let x = x0; x <= x1 + .1; x += (x1 - x0) / 24) { const [px, py] = at(x, phi); d += (d ? 'L' : 'M') + px.toFixed(1) + ' ' + py.toFixed(1); }
+      const layer = k === 0 || k === 6 ? edge : Math.sin(phi) > 0 ? front : back;
+      mk('path', { d }, layer);
+    }
+    rings.forEach(x => {
+      ['f', 'b'].forEach(side => {
+        let d = '';
+        for (let i = 0; i <= 24; i++) { const phi = (side === 'f' ? 0 : Math.PI) + i * Math.PI / 24; const [px, py] = at(x, phi); d += (d ? 'L' : 'M') + px.toFixed(1) + ' ' + py.toFixed(1); }
+        mk('path', { d }, side === 'f' ? front : back);
+      });
+    });
+    return at;
+  };
+  const FX0 = 70, FX1 = 600, ft = x => (x - FX0) / (FX1 - FX0);
+  const fH = x => { const t = ft(x); return 78 - 34 * Math.pow(t, 1.2) + 10 * Math.sin(Math.PI * Math.min(t * 1.6, 1)); };
+  const fC = x => 272 - 6 * ft(x);
+  const forearm = tube(FX0, FX1, fH, fC, [70, 150, 250, 330, 410, 490, 600]);
+  tube(600, 632, () => 40, () => 266, [616, 632]);
+  const pH = x => 42 + 18 * Math.sin(Math.PI / 2 * (x - 632) / 140), pC = () => 266;
+  tube(632, 772, pH, pC, [680, 730, 772]);
+
+  /* The electrode band: 10 electrodes round the forearm at x = 250. */
+  for (let k = 0; k < 10; k++) {
+    const phi = k * 2 * Math.PI / 10 + .3, [x, y] = forearm(250, phi);
+    mk('rect', { x: x - 5, y: y - 4, width: 10, height: 8, rx: 2, class: 'electrode' + (Math.sin(phi) > 0 ? '' : ' back') });
+  }
+  /* The model chip, and the traces that carry the signal to it and on to the hand. */
+  const traceA = mk('path', { d: 'M256 262 C 330 250, 400 262, 455 268', class: 'trace' });
+  const traceB = mk('path', { d: 'M505 268 C 580 270, 660 262, 760 258', class: 'trace' });
+  mk('rect', { x: 455, y: 252, width: 50, height: 32, rx: 4, class: 'chip' });
+  for (let i = 0; i < 5; i++) { mk('line', { x1: 461 + i * 9.5, y1: 248, x2: 461 + i * 9.5, y2: 252, class: 'chip-pin' }); mk('line', { x1: 461 + i * 9.5, y1: 284, x2: 461 + i * 9.5, y2: 288, class: 'chip-pin' }); }
+  mk('text', { x: 480, y: 272, 'text-anchor': 'middle', class: 'chip-label' }).textContent = 'HGRN';
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    [[traceA, 0], [traceA, .55], [traceA, 1.1], [traceB, .3], [traceB, .85]].forEach(([path, delay]) => {
+      const c = mk('circle', { r: 2.6, class: 'pulse' });
+      const m = mk('animateMotion', { dur: '1.6s', repeatCount: 'indefinite', begin: delay + 's', path: path.getAttribute('d') }, c);
+    });
+  }
+
+  /* Fingers, seen from above. Bending a joint folds the segment down toward the palm, so from above
+     it shortens by the cosine of how far it has bent: a fist reads as a row of knuckles. */
+  const finger = (x, y, spread, lens, w) => {
+    const g = mk('g', { class: 'finger', transform: `translate(${x} ${y}) rotate(${spread})` });
+    const segs = lens.map((len, i) => {
+      const ww = w * (1 - i * .09);
+      return { len, ww, rect: mk('rect', { y: -ww / 2, height: ww, rx: ww / 2 }, g), knuckle: mk('circle', { r: ww * .2 }, g) };
+    });
+    return { g, x, y, spread, segs };
+  };
+  const drawFinger = (f, flex, rot = 0) => {
+    f.g.setAttribute('transform', `translate(${f.x} ${f.y}) rotate(${f.spread + rot})`);
+    let pos = 0, cum = 0;
+    f.segs.forEach((sg, i) => {
+      cum += flex[i];
+      const vis = sg.len * Math.max(Math.cos(cum * Math.PI / 180), .1);
+      sg.rect.setAttribute('x', pos - sg.ww * .3);
+      sg.rect.setAttribute('width', vis + sg.ww * .6);
+      sg.knuckle.setAttribute('cx', pos);
+      pos += vis;
+    });
+  };
+  const F = {
+    pinky: finger(770, 308, 11, [40, 26, 20], 18),
+    ring: finger(778, 282, 4, [52, 33, 24], 21),
+    middle: finger(780, 255, -2, [56, 36, 26], 22),
+    index: finger(776, 228, -7, [50, 32, 24], 21),
+    thumb: finger(682, 216, -42, [48, 36], 24),
+  };
+  /* Gestures: flexion per joint in degrees, and for the thumb a swing across the palm. */
+  const curl = [80, 95, 70];
+  const POSE = {
+    open: { index: [0, 0, 0], middle: [0, 0, 0], ring: [0, 0, 0], pinky: [0, 0, 0], thumb: [0, 0], swing: 0 },
+    fist: { index: curl, middle: curl, ring: curl, pinky: curl, thumb: [15, 40], swing: 62 },
+    point: { index: [0, 0, 0], middle: curl, ring: curl, pinky: curl, thumb: [15, 40], swing: 62 },
+    pinch: { index: [38, 50, 30], middle: [10, 12, 8], ring: [8, 10, 6], pinky: [6, 8, 5], thumb: [5, 12], swing: 24 },
+  };
+  let pose = JSON.parse(JSON.stringify(POSE.open));
+  const drawHand = p => { ['pinky', 'ring', 'middle', 'index'].forEach(n => drawFinger(F[n], p[n])); drawFinger(F.thumb, p.thumb, p.swing); };
+  /* Illustrative electrode activity per gesture: not recorded data. */
+  const CH = {
+    open: [.55, .7, .45, .2, .12, .1, .15, .3, .5, .6],
+    fist: [.35, .3, .5, .85, .95, .9, .75, .5, .3, .25],
+    point: [.7, .6, .35, .6, .8, .55, .3, .2, .45, .5],
+    pinch: [.2, .35, .65, .5, .3, .2, .45, .7, .4, .2],
+  };
+  const chan = $('#chan');
+  const bars = Array.from({ length: 10 }, () => chan.appendChild(document.createElement('i')));
+  const setGesture = g => {
+    const from = JSON.parse(JSON.stringify(pose)), to = POSE[g];
+    const mix = t => { for (const k in to) pose[k] = Array.isArray(to[k]) ? to[k].map((v, i) => from[k][i] + (v - from[k][i]) * t) : from[k] + (to[k] - from[k]) * t; drawHand(pose); };
+    if (window.gsap && !matchMedia('(prefers-reduced-motion: reduce)').matches) { const o = { t: 0 }; gsap.to(o, { t: 1, duration: .7, ease: 'back.out(1.4)', onUpdate: () => mix(o.t) }); }
+    else mix(1);
+    bars.forEach((b, i) => b.style.setProperty('--v', CH[g][i]));
+  };
+  $('#gestures').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    $('#gestures').querySelectorAll('button').forEach(x => { x.setAttribute('aria-pressed', x === b); x.classList.remove('hint'); });
+    setGesture(b.dataset.g);
+  });
+  drawHand(pose);
+  bars.forEach((b, i) => b.style.setProperty('--v', CH.open[i]));
+
+  /* Numbered points. Positions are in the drawing's own coordinates. */
+  const VB = [40, 145, 920, 235];
+  const SPOTS = [
+    { x: 250, y: 186, title: 'A band of 10 electrodes', text: 'sEMG electrodes on the forearm pick up the electrical activity of the muscles that move the fingers. The NinaPro DB1 dataset recorded 27 people this way.' },
+    { x: 350, y: 262, title: 'The signal, cut into windows', text: 'The signal is cut into windows of 200 samples. Each window becomes 10 slices of 5 classic features: mean absolute value, RMS, waveform length, zero crossings, and slope sign changes.' },
+    { x: 480, y: 226, title: 'The model', text: 'A 4-layer recurrent network with 128 hidden units reads each window and names the gesture. I compared an HGRN against an LSTM.', go: '#q3', label: 'What would it cost on a prosthetic?' },
+    { x: 480, y: 318, title: 'How it is trained', text: 'Training collapsed at first. Windows fed in recording order are mostly rest, so the model learned to predict rest for everything.', go: '#q2', label: 'See the 2×2 ablation' },
+    { x: 912, y: 300, title: '52 gestures', text: 'NinaPro DB1 has 3 exercises: 12 finger movements, 17 hand and wrist movements, and 23 grasps. Each exercise can arrive as a new task.', go: '#q1', label: 'Which method forgets least?' },
+    { x: 100, y: 330, title: 'A new person', text: 'Muscle signals differ from person to person, so a model trained on one user works poorly on the next. The goal is to learn each new person without forgetting the earlier ones.', go: '#q1', label: 'Which method forgets least?' },
+  ];
+  const tip = $('#tip'), spotsEl = $('#spots'), fig = $('.arm-fig');
+  let openSpot = null;
+  const spotBtns = SPOTS.map((sp, i) => {
+    const b = document.createElement('button');
+    b.className = 'spot';
+    b.textContent = i + 1;
+    b.style.left = (sp.x - VB[0]) / VB[2] * 100 + '%';
+    b.style.top = (sp.y - VB[1]) / VB[3] * 100 + '%';
+    b.style.setProperty('--d', i * .35 + 's');
+    b.setAttribute('aria-expanded', 'false');
+    b.setAttribute('aria-controls', 'tip');
+    b.setAttribute('aria-label', `${i + 1}: ${sp.title}`);
+    b.addEventListener('click', () => showTip(openSpot === i ? null : i));
+    spotsEl.append(b);
+    return b;
+  });
+  const showTip = i => {
+    openSpot = i;
+    spotBtns.forEach((b, j) => b.setAttribute('aria-expanded', j === i));
+    if (i == null) { tip.hidden = true; return; }
+    const sp = SPOTS[i];
+    tip.innerHTML = `<button class="x" type="button" aria-label="Close">×</button><h3>${sp.title}</h3><p>${sp.text}</p>${sp.go ? `<a href="${sp.go}">${sp.label} →</a>` : ''}`;
+    tip.hidden = false;
+    tip.querySelector('.x').addEventListener('click', () => { showTip(null); spotBtns[i].focus(); });
+    /* Beside the point, on whichever side has room, kept inside the drawing. */
+    const W = fig.clientWidth, Hh = fig.clientHeight, px = (sp.x - VB[0]) / VB[2] * W, py = (sp.y - VB[1]) / VB[3] * Hh;
+    const tw = tip.offsetWidth, th = tip.offsetHeight;
+    /* Near the right edge the hand is in the way, so the tooltip drops below the point instead. */
+    if (px > W * .8) {
+      tip.style.left = Math.max(0, Math.min(W - tw, px - tw + 20)) + 'px';
+      tip.style.top = py + 26 + 'px';
+    } else {
+      const left = px > W * .55 ? px - tw - 26 : px + 26;
+      tip.style.left = Math.max(0, Math.min(W - tw, left)) + 'px';
+      tip.style.top = Math.max(-40, Math.min(Hh - th + 40, py - th / 2)) + 'px';
+    }
+  };
+  addEventListener('keydown', e => { if (e.key === 'Escape' && openSpot != null) { const i = openSpot; showTip(null); spotBtns[i].focus(); } });
+  document.addEventListener('click', e => { if (openSpot != null && !e.target.closest('.spot, .tip')) showTip(null); });
+
+  /* Palette previews, mockup only. */
+  const pal = $('.pal');
+  pal.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    pal.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+    if (b.dataset.p === 'rose') delete document.documentElement.dataset.palette;
+    else document.documentElement.dataset.palette = b.dataset.p;
+  });
+
+  /* Scroll motion in the manner of Apple's product pages: text lights up as you read down, sections
+     rise into place, and data fills in once it is on screen. Skipped entirely under reduced motion. */
+  if (!window.gsap || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  gsap.registerPlugin(ScrollTrigger, SplitText);
+
+  /* Intro: the title rises in line by line, then everything below it follows. */
+  document.fonts.ready.then(() => {
+    const t = SplitText.create('h1', { type: 'lines', mask: 'lines' });
+    gsap.timeline()
+      .from(t.lines, { yPercent: 105, duration: 1, ease: 'expo.out', stagger: .09 })
+      .from('.venue, .lede', { autoAlpha: 0, y: 14, duration: .7, ease: 'power3.out', stagger: .08 }, .25)
+      .from('.qs-title, .q, .scroll-hint', { autoAlpha: 0, y: 34, duration: .8, ease: 'expo.out', stagger: .07 }, .45);
+  });
+  /* Leaving the intro, it shrinks back and dims, as if the next section slides over it. */
+  gsap.to('.intro', { scale: .92, autoAlpha: .15, ease: 'none', transformOrigin: '50% 0%',
+    scrollTrigger: { trigger: '.intro', start: 'top top', end: 'bottom top', scrub: true } });
+
+  /* The arm draws itself as it scrolls in, then its numbered points appear one by one. */
+  const lines = $$('#arm .mesh path, #arm .edge path');
+  lines.forEach(l => { l.setAttribute('pathLength', 1); l.style.strokeDasharray = 1; l.style.strokeDashoffset = 1; });
+  gsap.timeline({ scrollTrigger: { trigger: '.arm-fig', start: 'top 85%', end: 'top 30%', scrub: .6 } })
+    .to(lines, { strokeDashoffset: 0, ease: 'none', stagger: .004 }, 0)
+    .from('#arm .finger, #arm .electrode, #arm .chip, #arm .trace, #arm .chip-pin, #arm .chip-label', { autoAlpha: 0, ease: 'none', stagger: .01 }, .35);
+  gsap.from('.spot', { scale: 0, autoAlpha: 0, duration: .5, ease: 'back.out(2)', stagger: .12,
+    scrollTrigger: { trigger: '.arm-fig', start: 'top 40%' } });
+  gsap.from('.arm-sec .ahead > *, .arm-sec .try, .channels', { y: 40, autoAlpha: 0, duration: .9, ease: 'expo.out', stagger: .06,
+    scrollTrigger: { trigger: '.arm-sec', start: 'top 75%' } });
+
+  $$('.answer-sec').forEach(sec => {
+    sec.classList.add('pre');
+    gsap.from(sec.querySelectorAll('.num, h2'), { y: 50, autoAlpha: 0, duration: 1, ease: 'expo.out', stagger: .06,
+      scrollTrigger: { trigger: sec, start: 'top 78%' } });
+    /* The answer sharpens into focus as it scrolls up, tied to the scroll. */
+    const short = sec.querySelector('.short');
+    gsap.fromTo(short, { autoAlpha: 0, y: 20, filter: 'blur(6px)' }, { autoAlpha: 1, y: 0, filter: 'blur(0px)', ease: 'none',
+      scrollTrigger: { trigger: short, start: 'top 90%', end: 'top 62%', scrub: .6 } });
+    gsap.from(sec.querySelectorAll('.why, .try, .stream, .stream-cap, .charts, .legend-methods, .grid22, .result, .cost, .src'),
+      { y: 40, autoAlpha: 0, duration: .9, ease: 'expo.out', stagger: .06, scrollTrigger: { trigger: sec, start: 'top 55%' } });
+    /* Data fills in once on screen: bars grow, and figures count up to their values. */
+    ScrollTrigger.create({ trigger: sec, start: 'top 45%', once: true, onEnter: () => {
+      sec.classList.remove('pre');
+      sec.querySelectorAll('.val, #costTable .v b, .cell b').forEach(el => {
+        const node = el.firstChild;
+        if (!node || node.nodeType !== 3) return;
+        const m = node.nodeValue.match(/^([0-9.]+)(.*)$/);
+        if (!m) return;
+        const end = parseFloat(m[1]), dp = (m[1].split('.')[1] || '').length, rest = m[2], o = { v: 0 };
+        gsap.to(o, { v: end, duration: 1.1, ease: 'expo.out', onUpdate: () => { node.nodeValue = o.v.toFixed(dp) + rest; } });
+      });
+    } });
+  });
+});
+</script>
+</body>
+</html>
